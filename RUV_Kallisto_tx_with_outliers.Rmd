@@ -1,0 +1,982 @@
+---
+title: "RUV_Kallisto_tx_with_outliers.Rmd"
+author: "Raquel Pinho"
+date: "1 de maio de 2019"
+output: 
+  html_document:
+        toc: true
+        toc_depth: 2
+        toc_float: 
+              collapsed: false
+        number_sections: true
+        fig.width: 11
+        fig.height: 9
+        fig.caption: true
+        dev: png
+        df_print: paged
+        code_folding: hide
+        self_contained: false
+        keep_md: true
+  word_document: default
+editor_options: 
+  chunk_output_type: inline
+---
+# Kallisto 
+
+# Data
+
+This code was written using data from mhlz experiment 2016, where Malnourished and full fed animals were compared after the ingestion of regular milk, lysozyme-rich milk or no milk. The expression along the length of the intestinal tract were assessed by underlying distribution of RNA-seq data. In total we have seven groups and 4 or three animals per group.
+
+I will first set the working directory to where output are going to be saved and choose the groups to be compared if it was not defined on the command line in the server, besides setting up the knitr options:
+
+##Setting work and output directory 
+
+```{r setwd1, echo=TRUE}
+#args = commandArgs(trailingOnly=TRUE)
+setwd("C:/Users/rpmello/Desktop/Data Analysis RNASeq/Projeto_Kallisto_DESeq_EdgeR")
+#groups <- c(args[1],args[2])
+#groups<-c("FFI","No_milkI")#colocar em ordem alfabética e com a inicial da seção
+dir.create(file.path("C:/Users/rpmello/Desktop/Data Analysis RNASeq/Projeto_Kallisto_DESeq_EdgeR/Output", sprintf("%s_vs_%s_Kallisto_with_outliers_R",groups[1], groups[2])), showWarnings = FALSE)
+output_dir<-file.path("C:/Users/rpmello/Desktop/Data Analysis RNASeq/Projeto_Kallisto_DESeq_EdgeR/Output", sprintf("%s_vs_%s_Kallisto_with_outliers_R",groups[1], groups[2]))
+dir.create(file.path(output_dir, "Figures"), showWarnings = FALSE)
+sprintf("Comparison of %s and %s.", groups[1], groups[2])
+knitr::opts_chunk$set(echo = TRUE, results = "asis", include = TRUE, fig.path = file.path(output_dir,"Figures"), fig.width = 11, fig.height = 8, fig.show = "animated")
+```
+
+# Importing results from Kallisto 
+
+
+I will start creating a table of counts with all the samples.But for this I will have to import the counts data and the metadata.
+
+## Import metadata table 
+
+Import the metadata and the outliers based on Poisson distances
+
+```{r import_metadata_outliers}
+setwd("C:/Users/rpmello/Desktop/Data Analysis RNASeq/Projeto_Kallisto_DESeq_EdgeR")
+metadata<- read.csv("./Data/metadata.csv")
+tx2gene_k<- read.csv("./Data/tx2gene_k.csv", header = T)
+```
+
+## Importing abundance data 
+
+Create a variable for the path to the abundance files and insert it in the metadata table:
+```{r path_to_kallisto, rownames.print= FALSE}
+path_to_files<- sprintf("C:/Users/rpmello/Desktop/Data Analysis RNASeq/Kallisto/%s/%s_kaltranscboot_trim", "results", metadata$SampleID)
+path_to_files<- cbind(path_to_files, metadata[,-c(1,3)])
+selectMetadata_k <- path_to_files[path_to_files$SampleID %in% metadata$SampleID[which(metadata$Group_sectio %in% groups)],]
+selectMetadata_k<-selectMetadata_k[order(selectMetadata_k$Group),]
+Path_kallisto<- file.path(selectMetadata_k$path_to_files,"abundance.h5")
+labels<- c(paste0(selectMetadata_k$Group, 1:(length(selectMetadata_k$Group)/2)))
+selectMetadata_k$Labels<- labels
+row.names(selectMetadata_k)<-selectMetadata_k$Labels
+head(selectMetadata_k)
+names(Path_kallisto)<-labels
+
+```
+
+### Import the data using tximport
+
+```{r kallisto_tximport, include=FALSE}
+library(tximport)
+txikallisto <- tximport(Path_kallisto, type = "kallisto", txOut = FALSE, tx2gene = tx2gene_k)
+names(txikallisto)
+dim(txikallisto$infReps$FF1)
+```
+
+The resulting counts table is :
+
+```{r counts_table}
+head(as.data.frame(txikallisto$counts))
+```
+
+# DESeq2
+
+I will follow the DESeq2 tutorial found [here](https://github.com/mikelove/asthma) and [here](Angus_workshop) on the counts data from kallisto.
+
+
+```{r batch_data_K, echo=TRUE, include=FALSE}
+library(dplyr)
+Litter<- sapply(strsplit(as.character(selectMetadata_k$Pig), "_"), '[', 1)
+selectMetadata_k<- cbind(selectMetadata_k, Litter)
+cols<- c("Collection","RNA_ext", "Lib_const", "Lane","Litter", "Group")
+selectMetadata_k[cols] <- lapply(selectMetadata_k[cols], factor)
+Weight<-selectMetadata_k$Weight_3Week
+selectMetadata_k$Time<-gsub("K","k",selectMetadata_k$Time)
+```
+### Removing dependent variables
+
+I will remove the metadata that does not present a variation in this comparison or have all unique values in this comparison
+
+```{r rm_factor}
+group<-selectMetadata_k$Group
+batch_effects<-sapply(1:ncol(selectMetadata_k), function(i){length(unique(selectMetadata_k[,i]))!= 1 & length(unique(selectMetadata_k[,i])) != length(selectMetadata_k[,i])})
+batch_effects<-selectMetadata_k[,batch_effects]
+dependent<-sapply(1:ncol(batch_effects), function(i){length(unique(batch_effects[1:4,i])) == 1 & length(unique(batch_effects[5:8,i])) == 1})
+independent<-which(!dependent)
+batch_effects_k<-batch_effects[,independent]
+batch_effects_k$Group<-group
+batch_effects_k
+```
+From now on I will use the manual from [RUVSeq](https://bioconductor.org/packages/release/bioc/vignettes/RUVSeq/inst/doc/RUVSeq.pdf) and the manual from [DESeq2](https://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#using-ruv-with-deseq2)
+
+## DESeq object
+
+Creating a DESeqDataSet for the in this case we will use the design ~Group, because, for know we are only interested in the normalized counts to filter low counts and calculate the variation varible with RUV.  
+
+```{r DESeq_norm}
+library(DESeq2)
+dds_k <-DESeqDataSetFromTximport(txikallisto, batch_effects_k, as.formula("~Group"))
+#It doesn't matter the formula now, because I am just interested in the counts, but I 
+dds_k<-estimateSizeFactors(dds_k)
+dds_k<-DESeq(dds_k)
+```
+
+### Filtering low expressed genes
+
+I wil remove the genes if low counts, and I am being very stringent here, removing the ones tha have lower than 20 counts in all the samples and the ones that have less then 5 counts in at least two samples. 
+
+I will use the [EDASeq](http://bioconductor.org/packages/release/bioc/manuals/EDASeq/man/EDASeq.pdf) package just to create an object were I can store the data and the metadata for multiple analysis.
+
+```{r EDAseq}
+library(EDASeq)
+library(RColorBrewer)
+#creating a set with the expression dat
+set_k<-newSeqExpressionSet(DESeq2::counts(dds_k), phenoData= batch_effects_k)
+set_k
+colors<-brewer.pal(4,"Set2")
+idx  <- rowSums(EDASeq::counts(set_k) > 5) >= 2
+set_k  <- set_k[idx, ]
+filter<-apply(EDASeq::counts(set_k),1,function(x){length(x[x>5])>2})
+set_k <-set_k[filter,]
+sprintf("Removed %s genes with low counts from %s total genes", nrow(EDASeq::counts(dds_k))-nrow(EDASeq::counts(set_k)),nrow(DESeq2::counts(dds_k)))
+```
+
+## RUVSeq
+
+The number of sig DE genes with mod1 (~Group) was:
+
+```{r mod1}
+res<-results(dds_k)
+sigres<-res[!is.na(res$padj),]
+sigres<-sigres[sigres$padj<0.1 & sigres$log2FoldChange>1| sigres$log2FoldChange< -1,]
+dim(sigres)
+```
+
+### Box plot of the counts per sample 
+
+We can analyze the variation of the counts before normalization and reduced variation.
+
+```{r box_plot_counts}
+plotRLE(set_k, outline =F, ylim=c(-2,2), col=colors[set_k$Group])
+plotPCA(set_k, col=colors[set_k$Group])
+```
+
+### Upper quartile normalization
+
+The upper quartile normalization [(UQ)](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-94) normalizes the data  accounting for the most highly expressed transcripts, since there is a bias on the number of reads  associated to them, i.e, more expresssed trancripts generate more reads and futhermore the number of reads on these highly expressed genes is proportional to the total number of reads in the sample (if samples are in individual lanes or in the same lane), which is not the case for me. [Here](http://vinaykmittal.blogspot.com/2013/10/fpkmrpkm-normalization-caveat-and-upper.html)a more human explanation. And [here](https://academic.oup.com/bib/article/14/6/671/189645) a more recent paper on RNA data normalization. 
+
+```{r upper}
+set_n<-betweenLaneNormalization(set_k,which = "upper")
+set_n$Group<-factor(set_n$Group)
+plotRLE(set_n, outline=F, col=colors[set_n$Group])
+plotPCA(set_n,col=colors[set_n$Group])
+```
+
+### Using empirical control genes 
+
+Since no spike in were used we will use the genes that have least changed between samples ( least significantly DE genes ) and use them as controls for the unwanted factors. So first we do a DE analysis and find the genes and then we do the normalization. 
+
+### Empirical controls using the prior DE analisis using DESeq2 
+
+Now we are going to use the DESeq2 to do DE analysis so we can pick the least DE genes as controls.In this case I will estimate only one unwanted variacen variable. 
+
+```{r prior_DESEq}
+#Using RUVSeq
+library(RUVSeq)
+not.sig <- rownames(res)[which(res$pvalue > .2)]
+empirical <- rownames(set_n)[ rownames(set_n) %in% not.sig ]
+if("RDAVIDWebService" %in% (.packages())){
+  detach("package:RDAVIDWebService", unload=TRUE) 
+}
+set_k_n <- RUVg(set_n, empirical, k=1)
+pData(set_k_n)
+```
+
+Using the unwanted variance variable in DESeq ( ~ W1 + Group).
+
+```{r ruv_var}
+ddsruv <- dds_k
+ddsruv$W1 <- set_k_n$W_1
+design(ddsruv) <- ~ W1 + Group
+dds_k<-ddsruv
+```
+
+The resulting counts are displayed here:
+
+```{r DESeq_norm_counts}
+head(as.data.frame(DESeq2::counts(dds_k, normalized=TRUE)))
+```
+## Calculating the poisson distance
+
+```{r poisson_dist_rlog_kallisto, echo=TRUE, include=FALSE}
+# to see it as a Poisson distances
+library("PoiClaClu")
+library(gplots)
+library(RColorBrewer)
+rlogdds_k<- rlog(dds_k)
+poisd_k<-PoissonDistance(t(DESeq2::counts(dds_k)))
+samplePoisDistMatrix_k<-as.matrix(poisd_k$dd)
+row.names(samplePoisDistMatrix_k)<-paste(rlogdds_k$RNA_ext, rlogdds_k$Group, sep="_")
+colors<- colorRampPalette(rev(brewer.pal(9,"Blues")))(255)
+```
+
+### Heatmap of the log transformed counts
+
+```{r heatmap_pois_log}
+hc<- hclust(poisd_k$dd)
+heatmap.2(samplePoisDistMatrix_k, Rowv=as.dendrogram(hc), symm=T, trace="none", col= colors, labCol=F)
+```
+
+### We can also see the PCA plot
+
+```{r logcounts_PCA}
+library(ggplot2)
+z <-plotPCA(rlogdds_k, intgroup = c( "Group"))
+z+ geom_text(aes(label = selectMetadata_k$Pig))
+```
+
+## DE analysis 
+
+Using the desing, we have the following results:  
+
+```{r DE_test1, echo= TRUE, include=FALSE}
+#First, we will exclude the transcripts with 0 reads and the transcripts with very low expression
+dds_k <- dds_k[rowSums(DESeq2::counts(dds_k)) > 0,]
+keep <- rowSums(DESeq2::counts(dds_k) >= 10) >= 3
+table(keep)
+dds_k <- dds_k[keep,] # filter them out
+# Now, we can call the DESeq function
+dds_k <- DESeq(dds_k, betaPrior = FALSE)
+resultsNames(dds_k)
+res_k<- results(dds_k)
+#in this defaut, the L2FC estimation is based on MLE (betaprior is False) and the last variable is the contrast that is used.
+```
+
+Summary of the results: 
+```{r summary_res_k}
+summary(res_k)
+res.sort<- res_k[order(res_k$pvalue), ]
+```
+
+### Significant DE genes 
+
+Considering a padj < 0.1 being significant  we can subset the significant differentiated genes and we have this number of genes with padj < 0.1 L2FC 1
+```{r sig_genes}
+res_k<- as.data.frame(res_k)
+resSig_Kal <- subset(res_k, padj< 0.1)
+resSig_Kal <- subset(resSig_Kal, log2FoldChange < -1 | log2FoldChange > 1)
+saveRDS(resSig_Kal, file = file.path(output_dir,sprintf("%s_vs_%s_resSig_Kal_with_outliers.RDS",groups[1], groups[2])))
+dim(resSig_Kal)
+```
+
+#### We can be more stringent and put the log2foldchange values < -1.5 or > 1.5
+
+```{r stringent_call_Kal}
+resSig_Kal1.5 <- subset(resSig_Kal, log2FoldChange < -1.5 | log2FoldChange > 1.5)
+dim(resSig_Kal1.5)
+```
+
+### Sorting Down and upregulated genes
+
+We can use the log2foldchange display the most variable genes.
+
+#### The top downregulated genes:
+
+top downregulated genes ( based on l2fc) and total number of downregulated genes:
+
+```{r topdown}
+# sorting by the Log2FoldChange
+head(as.data.frame(resSig_Kal[order(resSig_Kal$log2FoldChange), ]),30) # stronger downregulation
+
+#Getting the up regulated or down regulated genes 
+downresSig_Kal<-resSig_Kal[resSig_Kal$log2FoldChange < -1,]
+downresSig_Kal<-downresSig_Kal[order(downresSig_Kal$log2FoldChange),]
+dim(downresSig_Kal)
+```
+
+#### The top upregulated:
+
+Top upregulated genes and the total number of upregulated genes:
+
+```{r topup}
+head(as.data.frame(resSig_Kal[order(-resSig_Kal$log2FoldChange), ]),30) #stronger upregulation
+
+upresSig_Kal<-resSig_Kal[resSig_Kal$log2FoldChange > 1,]
+upresSig_Kal<-upresSig_Kal[order(-upresSig_Kal$log2FoldChange),]
+dim(upresSig_Kal)
+
+```
+
+
+
+###  List of genes with padj < 0.1, L2FC < -1 or > 1.
+
+Now, we can use BiomaRt to convert the ensembl ID into gene names. 
+
+```{r list of DEgenes, include=FALSE, echo=TRUE}
+library(biomaRt)
+mart<- useMart("ensembl")
+Pig_ensembl<- useDataset("sscrofa_gene_ensembl", mart=mart)
+Human<-useDataset("hsapiens_gene_ensembl", mart=mart)
+down_genes_names<- getBM(attributes = c("ensembl_gene_id","external_gene_name"), filters= "ensembl_gene_id", values = rownames(downresSig_Kal), mart = Pig_ensembl)
+up_genes_names<- getBM(attributes = c("ensembl_gene_id","external_gene_name"), filters= "ensembl_gene_id", values = rownames(upresSig_Kal), mart = Pig_ensembl)
+```
+
+For the downregulated genes ordered by padjusted and the total number of genes succefully converted by BiomaRt:
+
+```{r down_gene_list}
+down_genes_names<-transform(merge(as.data.frame(downresSig_Kal),down_genes_names,by.x=0, by.y ="ensembl_gene_id",all=TRUE), row.names=Row.names, Row.names=NULL)
+down_genes_names_kal<- down_genes_names[order(down_genes_names$padj),]
+#The number of genes  we were able to find the gene name on BiomaRt
+head(down_genes_names_kal, 30)
+sum(down_genes_names$external_gene_name != "")
+```
+
+For the upregulated genes ordered by padjusted and the total number of genes succefully converted by BiomaRt:
+
+
+```{r up_gene_list}
+up_genes_names<-transform(merge(as.data.frame(upresSig_Kal),up_genes_names,by.x=0, by.y ="ensembl_gene_id",all=TRUE), row.names=Row.names, Row.names=NULL)
+up_genes_names_kal<- up_genes_names[order(up_genes_names$padj),]
+#The number of genes  we were able to find the gene name on BiomaRt
+sum(up_genes_names$external_gene_name != "")
+head(up_genes_names_kal,30)
+```
+
+I will use the list to annotate the genes using the Biomart in Ensembl.
+
+```{r total_gene_list}
+#I will get the IDS and will use the following code
+resSig_Kal<- resSig_Kal[order(resSig_Kal$padj), ]
+gene_names_removed_outliers_kal<- getBM(attributes = c("ensembl_gene_id","external_gene_name"), filters= "ensembl_gene_id", values = rownames(resSig_Kal), mart = Pig_ensembl)
+gene_names_removed_outliers_kal<-transform(merge(as.data.frame(resSig_Kal),gene_names_removed_outliers_kal,by.x=0, by.y ="ensembl_gene_id",all=TRUE), row.names=Row.names, Row.names=NULL)
+gene_names_removed_outliers_kal<-as.data.frame(gene_names_removed_outliers_kal[order(gene_names_removed_outliers_kal$padj),])
+head(gene_names_removed_outliers_kal)
+dim(gene_names_removed_outliers_kal)
+``` 
+
+## Diagnostic plots
+
+To plot the counts of specific genes we can use the name of the gene or a a specific value related to it
+
+
+### Volcano plot
+```{r volcano_plot}
+plot(res_k$log2FoldChange, -log(res_k$pvalue),main ="Volcano plot Kallisto data from DESeq2", xlab= "Log2FoldChange", ylab = "-log(Pvalue)", pch = 21, col=ifelse(res_k$pvalue <0.001,"red","black"), xlim= c(-5,5), ylim =c(0,25), abline(v=c(-2,2)))
+```
+
+### Plotting the lowest padj gene
+
+```{r lowest_padj}
+topGene<- row.names(resSig_Kal[which.min(resSig_Kal$padj),])
+plotCounts(dds_k,gene= topGene,main = gene_names_removed_outliers_kal$external_gene_name[1], intgroup="Group")
+
+```
+
+### to do the MA plot
+```{r MAplot}
+plotMA(res_k, ylim=c(-20,20))
+```
+
+###To plot dispersion.
+(within group variability of each gene )
+
+```{r dispersion_plot}
+plotDispEsts(dds_k)
+```
+
+### histogram of pvalues
+```{r hist_pvalue}
+hist(res_k$pvalue[res_k$baseMean>1], breaks=20, col="grey50", border="white")
+```
+
+###Clustering
+of rlog counts of the top 50 DE genes
+```{r clustering_rlog, include=FALSE}
+library(genefilter)
+#most hihgly variable genes
+topVarGenes<- head(order(-rowVars(assay(rlogdds_k))),50)
+colors<- colorRampPalette(rev(brewer.pal(9,"PuOr")))(255)
+sidecols<- c("grey", "dodgerblue")[rlogdds_k$Group]
+mat<- assay(rlogdds_k)[topVarGenes,]
+mat<- mat - rowMeans(mat)
+colnames(mat)<- paste0(rlogdds_k$Group)
+```
+
+```{r heatmap_kal}
+heatmap.2(mat,Colv=F, trace="none", col=colors, ColSideColors=sidecols, labRow=F,scale="row")
+```
+
+
+### Clustering of normalized counts
+
+150 more variable DE genes (if DE genes < 150, all genes)
+
+```{r tpm_cluster1, echo= TRUE, include= FALSE}
+#create an object with the tpm file names
+
+tpmDE<- DESeq2::counts(dds_k[row.names(dds_k) %in%  row.names(resSig_Kal),], normalized =T)
+tpmDE<-tpmDE[rowSums(tpmDE)>15,]
+dim(tpmDE)
+
+var_genes <- apply(tpmDE, 1, var)
+head(var_genes)
+
+# Get the gene names for the top 100 most variable genes
+len<-ifelse(nrow(tpmDE)> 150, 150,nrow(tpmDE))
+select_var <- names(sort(var_genes, decreasing=TRUE))[1:len]#DE genes with L2FC 1
+
+head(select_var)
+# Subset the normalized counts dataframe, grabbing the select_var genes
+highly_variable_norm_counts <- tpmDE[select_var,]
+
+# check the dimensions and the first few rows
+dim(highly_variable_norm_counts)
+head(highly_variable_norm_counts)
+```
+
+# Prepare for the heatmap
+```{r tpm_heatmap}
+# Get some nicer colours
+mypalette <- brewer.pal(11,"RdYlBu")
+
+morecols <- colorRampPalette(mypalette)
+
+# Load library for heatmap
+heatmap.2(highly_variable_norm_counts, col=rev(morecols(50)), trace="none",
+              main="Most variable genes across samples", scale="row",
+              labCol = labels)
+
+#To save the gene lists in both the cluster( 100 more variable genes in the resSig_Salmon2 table) and in the resSig_Salmon2 so I can used the transcripts to annotation and the other downstream application like panther or DAVID.
+```
+
+Cluster with all the DE genes using TPM 
+
+```{r cluster_tpmde_all1}
+DE_counts<- tpmDE
+heatmap.2(DE_counts, col=rev(morecols(50)), trace="none",
+              main="Most variable genes across samples", scale="row",
+              labCol = labels)
+```
+
+
+## Pathway Analysis
+
+I will use the lists to do the Pathway analysis with ReactomePA and DAVIDWebService
+
+Fist, geting the GO terms for the DEgenes (padj,0.1, L2FC 1).
+
+For that, I will first connect to the DAVID brownser: 
+
+```{r DAVID_WEB, include= FALSE, echo=TRUE}
+#connecting to the DAVID in the R 
+library(RDAVIDWebService)
+david<- DAVIDWebService$new(email="rdpinho@ucdavis.edu", url="https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
+#david$getStub()
+connect(david)
+is.connected(david)
+#And now I will use the gene table from the DESeq2 to gete the reports from DAVID 
+DAVID_results_DESeq_Kal<- addList(david, row.names(resSig_Kal), idType = "ENSEMBL_GENE_ID" , listName = sprintf("%s_v_%s_Sig_genes_DESeq2", groups[1],groups[2]) ,listType = "Gene" )
+#And to see if the genes were the right background
+david
+```
+
+To see the percentage of the genes that were identified by the DAVID
+
+```{r percentage_David}
+DAVID_results_DESeq_Kal$inDavid
+```
+
+And then you can create the results charts from DAVID and filter them by biological process:
+
+```{r DAVID_data_from_R}
+DAVID_results_chart_kal<- getFunctionalAnnotationChart(david)
+#If I want to create a file with the chart information I would use the following code:
+#DAVID_results_chart<-DAVIDFunctionalAnnotationChartFile(DAVID_results_chart)
+DAVID_results_chart_DESeq_kal_BP<-DAVID_results_chart_kal[DAVID_results_chart_kal$Category == "GOTERM_BP_DIRECT" & DAVID_results_chart_kal$PValue < 0.05,]
+```
+
+We can plot the 5 most enriched pathways and the genes associated to those pathways
+
+```{r plot2D}
+if(dim(DAVID_results_chart_DESeq_kal_BP)[1]>0){
+plot2D(DAVIDFunctionalAnnotationChart(DAVID_results_chart_DESeq_kal_BP[1:5,]),
+       color=c("FALSE"="black", "TRUE"="green"))
+# We can see the top 5 GO pathways for biological process, and note how the evidence is true in our data for each of the genes in the pathway( if it is present on our sample or not)
+}else{
+  print("No significant term found")
+}
+```
+
+### GODag
+
+We can create a godag object from the functional chart
+
+```{r GODag_object}
+DAVIDGODag_DESeq_kal<-DAVIDGODag(DAVIDFunctionalAnnotationChart(DAVID_results_chart_DESeq_kal_BP), type ="BP",pvalueCutoff=.001)
+#I can isolate the significant ones by doing a dataframe but the resulting plot is the same 
+#sig_DAVID_RES_CHART<- DAVID_results_chart_BP[DAVID_results_chart_BP$PValue <0.001,]
+#sig_DAVID_RES_GODAG<- DAVIDGODag(DAVIDFunctionalAnnotationChart(sig_DAVID_RES_CHART), type ="BP",pvalueCutoff=.001)
+#we used a cutoff of 0.001 f or the pvalue. And now we can inspect the Dag object
+```
+
+We can get the most significant (p <p=0.0001) categories (GO ID) and the summary of the analysis
+```{r sig_godag}
+sigCategories(DAVIDGODag_DESeq_kal, p=0.0001)
+summary(DAVIDGODag_DESeq_kal)
+show(DAVIDGODag_DESeq_kal)
+# we can see by the FDR column that only the first 3 pathway are significant
+```
+
+And plot the terms in a graph form: 
+
+```{r Rgraphviz, include=FALSE, echo=TRUE}
+library(Rgraphviz)
+``` 
+
+```{r plot_terms}
+plotGOTermGraph(g=goDag(DAVIDGODag_DESeq_kal), r= DAVIDGODag_DESeq_kal, max.nchar= 20, node.shape="ellipse",node.colors=c(sig="red", not="white"))
+
+```
+
+### Using GOplot to visualize the GOterm from DAVID
+
+First, we have to put the data in the format required by the package.
+
+```{r checking the data}
+#for the expression data I will use the counts from the DGElist from the importated salmon data.
+cts_k<-DESeq2::counts(dds_k, normalized=TRUE)
+saveRDS(cts_k,file = file.path(output_dir,sprintf("%s_vs_%s_counts_TPM_Kal_with_outliers.RDS",groups[1], groups[2])))
+eset <- cts_k
+genelist<- as.data.frame(resSig_Kal)
+names(genelist)[2]<-"logFC"
+genelist$ID<-as.factor(rownames(genelist))
+genelist<-genelist[,c(7,2,6)]
+david_fun_k<- DAVID_results_chart_DESeq_kal_BP
+Term<- gsub("^.*?~","",DAVID_results_chart_DESeq_kal_BP$Term)
+ID<- gsub("~.*", "", DAVID_results_chart_DESeq_kal_BP$Term)
+#removing the GOID of the term. the(^) is the beginig of the string, (.) matching any characther, (*)repeated multiple times until get to ~, and plepace it by nothing "".The ? makes it to match until the first ~ , if there were two ~. 
+david_fun_k$Term<-as.factor(Term)
+david_fun_k$ID<- as.factor(ID)
+david_fun_k$Category <-as.factor(c(rep("BP", length(david_fun_k$Category) )))
+if(dim(david_fun_k)[1]>0){
+colnames(david_fun_k)[13]<-"adj_pval"
+david_fun_k <- david_fun_k[,c(1,14,2,6,13)]
+head(david_fun_k)
+#Now I will choose the first 5 more significant processes
+process<-as.character(david_fun_k[order(david_fun_k$adj_pval),3])[1:5]
+dataGOplot_kal<-list(eset = eset,genelist = genelist,david = as.data.frame(david_fun_k),process = process)
+}else{
+  print("Functional chart empty")
+}
+```
+
+.
+Now, that we have the data in the right format let's plot it using GOplot.
+
+```{r GOplot_circ, include=FALSE}
+library(GOplot)
+if(dim(david_fun_k)[1]>0){
+circ_k<- circle_dat(dataGOplot_kal$david,dataGOplot_kal$genelist)
+}
+```
+
+#### Plot the pathway colered by z-score significance
+```{r GoBar}
+if(dim(david_fun_k)[1]>0 & length(unique(circ_k$zscore)) > 1){
+print(GOBar(circ_k))}else {
+  print("No significant terms")
+}
+```
+
+#### Bubble plot of pathways
+```{r GOBubble}
+if(min(circ_k$adj_pval) < 0.05){
+print(GOBubble(circ_k, labels = 1))} else {
+  print("No significant terms")
+}
+```
+
+#### Plot significant enriched pathways and DE Genes
+
+This plot is interesting because it shows which genes are up and down on the pathway
+```{r GOCircle}
+if(dim(david_fun_k)[1]> 0 & length(unique(circ_k$zscore)) > 1){
+nsub<- ifelse(dim(circ_k[!duplicated(circ_k$term), ])[1] > 10, 10, dim(circ_k[!duplicated(circ_k$term), ])[1]);
+print(GOCircle(circ_k,nsub = nsub))} else {
+  print("No significant terms")
+}
+```
+
+I can also plot the relationship between the DE genes and the most enriched pathways
+
+```{r GOplot_terms_and_genes}
+if(dim(david_fun_k)[1]>0){
+subData <- subset(circ_k, term %in% process);
+genes<-subset(genelist, ID %in% subData$genes);
+All_genes<- getBM(attributes = c("ensembl_gene_id","external_gene_name"), filters= "ensembl_gene_id", values = row.names(res_k), mart = Pig_ensembl);
+names_subData<- subset(All_genes, ensembl_gene_id %in% subData$genes);
+names_subData$external_gene_name<- ifelse(names_subData$external_gene_name == "", names_subData$ensembl_gene_id, names_subData$external_gene_name);
+chord_k <- chord_dat(circ_k, genes = genes, process = dataGOplot_kal$process);
+chord_names<-as.data.frame(cbind(chord_k, names_subData[,"external_gene_name"][match(rownames(chord_k), names_subData$ensembl_gene_id)]));
+row.names(chord_k)<-chord_names$V7;
+chord_k<-chord_k[,colSums(chord_k != 0) > 0];
+print(GOChord(chord_k));
+chord<-chord_k;
+terms<-dataGOplot_kal$process[!is.na(dataGOplot_kal$process)]
+if(length(terms)>2){
+print(GOCluster(circ_k, dataGOplot_kal$process, clust.by = "term", lfc.col = c('darkgoldenrod1','black','cyan1')))}}else{
+  print("No significant term found!")
+}
+#the GOCluster indicated in the outer ring the pathway that the gene is associated to, the inner ring shows the log2fc of the gene and the clustering the gene by category, euclidean average 
+```
+
+### Reactome pathways
+
+Using Biomart to convert the genes names into entrez ID (human) so I can use ReactomePA to do the pathway analysis
+
+First table converting all the genes to entrex id and then filtering by padj < 0.1
+ 
+```{r entrez_id_all1, include=TRUE}
+allentrez<- getBM(attributes = c("external_gene_name", "entrezgene"), filters= "external_gene_name", values = All_genes$external_gene_name, mart = Human) 
+l2fc<- as.data.frame(res_k[,c(2,6)])
+All_genes_entrez_rank<-merge(l2fc, All_genes, by.x = "row.names",by.y = "ensembl_gene_id")
+All_genes_entrez_rank<- merge(All_genes_entrez_rank, allentrez, by= "external_gene_name")
+all_genes_list<-All_genes_entrez_rank$log2FoldChange
+names(all_genes_list)<-All_genes_entrez_rank$entrezgene
+all_genes_list<-sort(all_genes_list, decreasing = T)
+DE_genes_entrez_rank<- All_genes_entrez_rank[All_genes_entrez_rank$padj < 0.1 & !is.na(All_genes_entrez_rank$padj),]
+DE_genes_list_k<- DE_genes_entrez_rank$log2FoldChange
+names(DE_genes_list_k)<- DE_genes_entrez_rank$entrezgene
+DE_genes_list_k<- sort(DE_genes_list_k, decreasing = T)
+```
+
+#### Using reactome to analize subsetted from all genes
+
+```{r Reactomeall1, echo=TRUE, include=FALSE}
+library(ReactomePA)
+x<- enrichPathway(gene = DE_genes_entrez_rank$entrezgene,readable = T, qvalueCutoff = 0.1)
+```
+
+Plots:
+```{r Reactome_plots}
+if(!is.null(x)){
+if(min(x@result$p.adjust)<0.05){
+sprintf("Barplot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s", groups[1],groups[2]);
+print(barplot(x, showCategory = 30));
+sprintf("Dotplot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s", groups[1],groups[2]);
+print(dotplot(x, showCategory=15));
+sprintf("Enrichment map plot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s", groups[1],groups[2]);
+print(emapplot(x, showCategory = 15, color = "p.adjust",layout = "kk",colorEdge = TRUE)); 
+print(cnetplot(x,showCategory = 5, categorySize = "pvalue", foldChange = DE_genes_entrez_rank$log2FoldChange, node_label= F, colorEdge = T))} else {
+  print("no enriched term found")
+}}
+```
+
+```{r gsea, include=FALSE, echo=TRUE}
+y<- gsePathway(DE_genes_list_k, nPerm = 1000,minGSSize = 10, pvalueCutoff = 0.05, pAdjustMethod = "BH")
+```
+
+Ploting the GSEA ( gene set enrichment analysis):
+where  the green line is the enrichment score, and the peak of the line is the emrichment score of the gene set. the gene following the peak are the one that more influenced the score. the lines are where the genes are in the ranked list and the bigger the line greater the correlation between the gene and the phenotype. The gene above zero are related to the first phenotype and the ones bellow zeros to the other phenotype.  
+```{r plot_gsea}
+if(nrow(y) > 0){
+print(gseaplot(y, geneSetID =(as.data.frame(y))[1,1],title = as.character((as.data.frame(y))[1,2])));
+print(cnetplot(y, categorySize = "pvalue", foldChange = DE_genes_entrez_rank$log2FoldChange,colorEdge = TRUE,node_label= FALSE));
+print(emapplot(y, showCategory = 15, color = "p.adjust",layout = "kk"));
+}
+#DEunique<- DE_genes_list[!duplicated(names(DE_genes_list))]
+```
+
+##### Reactome of the upregulated genes
+```{r Reactomeup1, echo=TRUE, include=FALSE}
+upentrez<- All_genes_entrez_rank[All_genes_entrez_rank$Row.names %in% row.names(upresSig_Kal),] 
+up_genes_list_k<-upentrez$log2FoldChange
+names(up_genes_list_k)<-upentrez$entrezgene
+up_genes_list_k<-sort(up_genes_list_k, decreasing = T)
+x<- enrichPathway(gene = upentrez$entrezgene,readable = T)
+```
+ 
+```{r reactomeup_plots}
+if(!is.null(x)){
+if(min(x@result$p.adjust)<0.05){
+sprintf("Barplot for the most enriched reactome pathway for Kallisto/DESeq upregulated genes analysis for comparison %s vs %s", groups[1],groups[2]);
+print(barplot(x, showCategory = 30));
+sprintf("Dotplot for the most enriched reactome pathway for Kallisto/DESeq  upregulated genes analysis for comparison %s vs %s", groups[1],groups[2]);
+print(dotplot(x, showCategory=15));
+sprintf("Enrichment map plot for the most enriched reactome pathway for Kallisto/DESeq upregulated genes analysis for comparison %s vs %s", groups[1],groups[2]);
+print(emapplot(x, showCategory = 15, color = "p.adjust",layout = "kk",colorEdge = T) );
+print(cnetplot(x,showCategory = 5, categorySize = "pvalue", foldChange = up_genes_list_k, node_label= F, colorEdge = T))}
+}
+```
+
+GSEA for the upregulated genes:
+```{r gsea_up, include=FALSE}
+y<- gsePathway(up_genes_list_k, nPerm = 1000,minGSSize = 10, pvalueCutoff = 0.05, pAdjustMethod = "BH")
+```
+
+```{r gsea_up_plot}
+if(nrow(y) > 0){
+print(gseaplot(y, geneSetID =(as.data.frame(y))[1,1],title = as.character((as.data.frame(y))[1,2])));
+print(cnetplot(y, categorySize = "pvalue", foldChange = upentrez$log2FoldChange,colorEdge = T));
+print(emapplot(y, showCategory = 15, color = "p.adjust",layout = "kk"));
+}
+```
+
+#### Reactome of downregulated genes
+
+```{r Reactomedown1, echo=FALSE}
+downentrez<- All_genes_entrez_rank[All_genes_entrez_rank$Row.names %in% row.names(downresSig_Kal),]
+downentrez<-downentrez[order(downentrez$log2FoldChange, decreasing = T),]
+down_genes_list_k<-downentrez$log2FoldChange
+names(down_genes_list_k)<-downentrez$entrezgene
+x<- enrichPathway(gene = downentrez$entrezgene,readable = T)
+``` 
+
+```{r reactome_down_plots}
+if(!is.null(x)){
+if(min(x@result$p.adjust)<0.05){
+sprintf("Barplot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s", groups[1],groups[2]);
+print(barplot(x, showCategory = 30));
+sprintf("Dotplot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s", groups[1],groups[2]);
+print(dotplot(x, showCategory=15));
+sprintf("Enrichment map plot for the most enriched reactome pathway for Kallisto/DESeq downregulated genes analysis for comparison %s vs %s", groups[1],groups[2]);
+print(emapplot(x, showCategory = 15, color = "p.adjust",layout = "kk"));
+print(cnetplot(x,showCategory = 5, categorySize = "pvalue", foldChange = down_genes_list_k, node_label= F, colorEdge = T))}} else {
+  print("NO enriched term found")
+}
+```
+
+GSEA of downregulated genes
+```{r gsea_down, include=FALSE, echo=TRUE}
+y<- gsePathway(down_genes_list_k, nPerm = 1000,minGSSize = 10, pvalueCutoff = 0.05, pAdjustMethod = "BH")
+```
+
+```{r gseaplot}
+if(nrow(y) > 0){
+print(gseaplot(y, geneSetID =(as.data.frame(y))[1,1],title = as.character((as.data.frame(y))[1,2])));
+print(cnetplot(y, categorySize = "pvalue", foldChange = downentrez$log2FoldChange,colorEdge = T));
+print(emapplot(y, showCategory = 15, color = "p.adjust",layout = "kk"));
+}
+#downunique<- down_genes_list[!duplicated(names(down_genes_list))]
+#viewPathway(as.character((as.data.frame(y))[1,2]), readable = T, foldChange = downunique )
+``` 
+
+# EdgeR
+
+
+We can repeat the same analysis using edgeR as the inference engine (Robinson, McCarthy, and Smyth 2009). The following code incorporates the average transcript length matrix as an offset for an edgeR analysis.
+
+But I will use the tximport imported counts again and calculate the nomalization.
+
+```{r EdgeR_count_data}
+library(edgeR)
+#I will use the data from Salmon imported with tximport
+counts_kal<-txikallisto$counts
+normMat <- txikallisto$length
+normMat <- normMat / exp(rowMeans(log(normMat)))
+o <- log(calcNormFactors(counts_kal/normMat)) + log(colSums(counts_kal/normMat))
+EdgeR_k <- DGEList(counts_kal)
+EdgeR_k <- scaleOffset(EdgeR_k, t(t(log(normMat)) + o))
+keep <- filterByExpr(EdgeR_k)
+EdgeR_k <- EdgeR_k[keep,]
+#The basic edgeR model fitting and results extraction can be accomplished with the following lines:
+EdgeR_k$samples$group<-substr(colnames(txikallisto$counts),1,nchar(colnames(txikallisto$counts))-1)
+EdgeR_k<- calcNormFactors(EdgeR_k)
+EdgeR_k<-estimateDisp(EdgeR_k)
+```
+## The results from the EdgeR
+
+### Counts of the EdgeRdataset
+
+```{r kal_edger_dataset}
+head(as.data.frame(EdgeR_k$counts))
+```
+
+### Plot MDS of the data
+
+The difference between the PCA nad MDS is that PCR display the two dimentions with the largest variance in the data, MDS is based in the pairwise distances betwen the points of the data. They will be the same if the covariance in the data is equal to the euclidean distance between data points. 
+
+```{r MDS_plot}
+plotMDS(EdgeR_k)
+```
+
+### DE analysis using exact test
+
+I will use the exact test to do the pairwise comparison without any batch effect.
+
+And the number of genes with pvalue < 0.1
+
+```{r EdgeR_kallisto_DE}
+EdgeR_k$samples$W1<-set_k_n$W_1
+design<-model.matrix(as.formula(~ W1+ group),data =EdgeR_k$samples)
+DE_fit<-glmQLFit(EdgeR_k,design=design)
+DE_single_factor_edgeR<- glmQLFTest(DE_fit)
+sig_DE_EdgeR_k<-DE_single_factor_edgeR$table[DE_single_factor_edgeR$table$PValue < 0.1,]
+dim(sig_DE_EdgeR_k)
+```
+
+## Toptags 
+
+Number of Genes with log2FoldChange < -1 or > 1, and p.adjusted < 0.1 and the table with the values.
+
+```{r toptag_sig}
+Topgenes_sfactor_edgeR_k<-topTags(DE_single_factor_edgeR, n = nrow(sig_DE_EdgeR_k))
+#The FDR is adj. Pvalue  
+Topgenes_sfactor_edgeR_k_0.1_1<- 
+Topgenes_sfactor_edgeR_k[Topgenes_sfactor_edgeR_k$table$FDR < 0.1   & Topgenes_sfactor_edgeR_k$table$logFC < -1 | Topgenes_sfactor_edgeR_k$table$logFC > 1,]
+dim(Topgenes_sfactor_edgeR_k_0.1_1)
+head(Topgenes_sfactor_edgeR_k_0.1_1$table)
+saveRDS(Topgenes_sfactor_edgeR_k_0.1_1$table, file = file.path(output_dir,sprintf("%s_vs_%s_EdgeR_sig_Kal_with_outliers.RDS",groups[1], groups[2])))
+```
+
+### Toptags downregulated genes
+
+```{r toptags_down}
+#Get the down regulated genes in the second group
+Topgenes_sfactor_edgeR_k_0.1_1_down<- Topgenes_sfactor_edgeR_k_0.1_1[Topgenes_sfactor_edgeR_k_0.1_1$table$logFC < 0, ]
+Topgenes_sfactor_edgeR_k_0.1_1_down<- Topgenes_sfactor_edgeR_k_0.1_1_down[order(Topgenes_sfactor_edgeR_k_0.1_1_down$table$logFC), ]
+dim(Topgenes_sfactor_edgeR_k_0.1_1_down)
+head(Topgenes_sfactor_edgeR_k_0.1_1_down$table)
+```
+### Toptags upregulated genes
+
+```{r toptags_up}
+#Getting the upregulated genes in the second group
+Topgenes_sfactor_edgeR_k_0.1_1_up<- Topgenes_sfactor_edgeR_k_0.1_1[Topgenes_sfactor_edgeR_k_0.1_1$table$logFC > 0, ]
+Topgenes_sfactor_edgeR_k_0.1_1_up<-Topgenes_sfactor_edgeR_k_0.1_1_up[order(-Topgenes_sfactor_edgeR_k_0.1_1_up$table$logFC), ]
+dim(Topgenes_sfactor_edgeR_k_0.1_1_up)
+head(Topgenes_sfactor_edgeR_k_0.1_1_up$table)
+```
+
+# Creating a volcano plot and a heatmap
+
+```{r plot_DE_EdgeR_Kallisto}
+plot(DE_single_factor_edgeR$table$logFC,-log(DE_single_factor_edgeR$table$PValue),main ="Volcano plot Kallisto data from EdgeR", xlab= "Log2FoldChange", ylab = "-log(Pvalue)", pch = 21, col=ifelse(DE_single_factor_edgeR$table$PValue<0.001,"red","black"), xlim= c(-5,5), ylim =c(0,25), abline(v=c(-2,2)))
+```
+
+```{r edger_heatmap}
+#Using normalized counts
+counts_kal_n <- cpm(EdgeR_k, normalized.lib.sizes = T)
+Sig_counts<-counts_kal_n[row.names(counts_kal_n) %in% row.names(Topgenes_sfactor_edgeR_k_0.1_1$table),]
+var_genes <- apply(Sig_counts, 1, var)
+head(var_genes)
+Sig_counts<- cbind(Sig_counts, var_genes)
+Sig_counts<-Sig_counts[order(Sig_counts[,7],decreasing =T),]
+len<-ifelse(dim(Sig_counts)[1]<50, dim(Sig_counts)[1],50)
+heatmap.2(Sig_counts[1:len,1:(ncol(Sig_counts)-1)],  trace="none", 
+              main="Most variable genes across samples Kallisto from EdgeR", scale="row",col = rev(morecols(50)),
+              labCol = labels )
+```
+
+## Functional analysis of the EdgeR results
+Using the DAVIDWEBServices to analize the DE genes and doing the plot2D of terms and evidence:
+
+```{r EdgeR_DAVID}
+if(is.connected(david)== FALSE) {
+  connect(david)
+}
+DAVID_results_EdgeR_k<- addList(david, row.names(Topgenes_sfactor_edgeR_k_0.1_1$table), idType = "ENSEMBL_GENE_ID" , listName = sprintf("%s_v_%s_Sig_genes_EdgeR",groups[1],groups[2]) ,listType = "Gene" )
+# to see the p% of genes that were recognize on DAVID database
+DAVID_results_EdgeR_k$inDavid
+DAVID_results_chart<- getFunctionalAnnotationChart(david)
+DAVID_results_chart_EdgeR_k_BP<-DAVID_results_chart[DAVID_results_chart$Category == "GOTERM_BP_DIRECT" & DAVID_results_chart$PValue < 0.05,]
+if(dim(DAVID_results_chart_EdgeR_k_BP)[1]>0){
+plot2D(DAVIDFunctionalAnnotationChart(DAVID_results_chart_EdgeR_k_BP[1:5,]),
+       color=c("FALSE"="black", "TRUE"="green"))
+}else{
+  print("No significant term found")
+}
+```
+
+### Comparing the results from DESeq and EdgeR
+
+```{r  comp_david}
+if(dim(DAVID_results_chart_DESeq_kal_BP) & dim(DAVID_results_chart_EdgeR_k_BP)[1]>0){
+sprintf("DESeq2_%s_%s", groups[1],groups[2])
+head(DAVID_results_chart_DESeq_kal_BP[order(DAVID_results_chart_DESeq_kal_BP$PValue),],10)
+sprintf("EdgeR_%s_%s", groups[1],groups[2])
+head(DAVID_results_chart_EdgeR_k_BP[order(DAVID_results_chart_EdgeR_k_BP$PValue),],10)
+# We can see the top 5 GO pathways for biological process, and note how the evidence is true in our data for each of the genes in the pathway( if it is present on our sample or not)
+#We can also use the chart to do a godag plot 
+}else{
+  print("Either DESeq or EdgeR functional chart is empty")
+}
+```
+
+## Significant terms
+
+```{r sig_term_edger}
+DAVIDGODag_EdgeR_k<-DAVIDGODag(DAVIDFunctionalAnnotationChart(DAVID_results_chart_EdgeR_k_BP), type ="BP",pvalueCutoff=.001)
+#we used a cutoff of 0.001 f or the pvalue. And now we can inspect the Dag object
+sigCategories(DAVIDGODag_EdgeR_k, p=0.0001)
+summary(DAVIDGODag_EdgeR_k)
+show(DAVIDGODag_EdgeR_k)
+# we can see by the FDR column which pathways are significant
+```
+
+The graph plot of the EdgeR data
+```{r plot_graph}
+plotGOTermGraph(g=goDag(DAVIDGODag_EdgeR_k), r= DAVIDGODag_EdgeR_k, max.nchar= 20, node.shape="ellipse",node.colors=c(sig="red", not="white"))
+
+```
+
+
+# Comparison between the DESeq2 and EdgeR results
+
+
+## Venndiagram of total genes:
+
+```{r intersect_DESeq_EdgeR}
+library(VennDiagram)
+# Total DE genes 
+I_total<- intersect(rownames(resSig_Kal), rownames(Topgenes_sfactor_edgeR_k_0.1_1$table))
+length(I_total)
+grid.newpage()
+draw.pairwise.venn(nrow(resSig_Kal), nrow(Topgenes_sfactor_edgeR_k_0.1_1$table), length(I_total), category = c("DESeq2", "EdgeR"), lty = rep("blank", 
+    2), fill = c("light blue", "pink"), alpha = rep(0.5, 2), cat.pos = c(-15, 
+    0), cat.dist = rep(0.025, 2), title= "DE genes from DESeq and EdgeR")
+```
+
+
+## Comparison between the downregulated genes
+```{r venn_down}
+I_down<- intersect(rownames(downresSig_Kal), rownames(Topgenes_sfactor_edgeR_k_0.1_1_down$table))
+length(I_down)
+grid.newpage()
+draw.pairwise.venn(nrow(downresSig_Kal), nrow(Topgenes_sfactor_edgeR_k_0.1_1_down$table), length(I_down), category = c("DESeq2", "EdgeR"), lty = rep("blank", 
+    2), fill = c("light blue", "pink"), alpha = rep(0.5, 2), cat.pos = c(-15, 
+    0), cat.dist = rep(0.025, 2), title= "Down regulated genes according to DESeq and/or EdgeR")
+```
+
+
+## Comparison between the upregulated genes
+
+```{r venn_up}
+I_up<- intersect(rownames(upresSig_Kal), rownames(Topgenes_sfactor_edgeR_k_0.1_1_up$table))
+length(I_up)
+grid.newpage()
+draw.pairwise.venn(nrow(upresSig_Kal), nrow(Topgenes_sfactor_edgeR_k_0.1_1_up$table), length(I_up), category = c("DESeq2", "EdgeR"), lty = rep("blank", 
+    2), fill = c("light blue", "pink"), alpha = rep(0.5, 2), cat.pos = c(-15, 
+    0), cat.dist = rep(0.025, 2), title= "up DE genes from DESeq and EdgeR")
+
+```
+
+## Get the list of the genes that are in both DESeq2  and edgeR DE genes.
+
+```{r saving_intersect}
+head(I_total)
+Kallisto_intersect<-gene_names_removed_outliers_kal[rownames(gene_names_removed_outliers_kal) %in% I_total, ]
+saveRDS(Kallisto_intersect,file = file.path(output_dir,sprintf("%s_vs_%s_Kallisto_intersect_with_outliers.RDS",groups[1], groups[2])))
+```
