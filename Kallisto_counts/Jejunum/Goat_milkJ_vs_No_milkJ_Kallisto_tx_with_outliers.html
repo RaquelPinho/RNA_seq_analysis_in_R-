@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Raquel Pinho" />
+
+
+<title>RUV_Kallisto_tx_with_outliers.Rmd</title>
+
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/navigation-1.1/tabsets.js"></script>
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/navigation-1.1/codefolding.js"></script>
+<link href="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/highlightjs-9.12.0/highlight.js"></script>
+<link href="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="Goat_milkJ_vs_No_milkJ_Kallisto_tx_with_outliers_files/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">RUV_Kallisto_tx_with_outliers.Rmd</h1>
+<h4 class="author">Raquel Pinho</h4>
+<h4 class="date">1 de maio de 2019</h4>
+
+</div>
+
+
+<div id="kallisto" class="section level1">
+<h1><span class="header-section-number">1</span> Kallisto</h1>
+</div>
+<div id="data" class="section level1">
+<h1><span class="header-section-number">2</span> Data</h1>
+<p>This code was written using data from mhlz experiment 2016, where Malnourished and full fed animals were compared after the ingestion of regular milk, lysozyme-rich milk or no milk. The expression along the length of the intestinal tract were assessed by underlying distribution of RNA-seq data. In total we have seven groups and 4 or three animals per group.</p>
+<p>I will first set the working directory to where output are going to be saved and choose the groups to be compared if it was not defined on the command line in the server, besides setting up the knitr options:</p>
+<div id="setting-work-and-output-directory" class="section level2">
+<h2><span class="header-section-number">2.1</span> Setting work and output directory</h2>
+<pre class="r"><code>#args = commandArgs(trailingOnly=TRUE)
+setwd(&quot;C:/Users/rpmello/Desktop/Data Analysis RNASeq/Projeto_Kallisto_DESeq_EdgeR&quot;)
+#groups &lt;- c(args[1],args[2])
+#groups&lt;-c(&quot;FFI&quot;,&quot;No_milkI&quot;)#colocar em ordem alfabÃ©tica e com a inicial da seÃ§Ã£o
+dir.create(file.path(&quot;C:/Users/rpmello/Desktop/Data Analysis RNASeq/Projeto_Kallisto_DESeq_EdgeR/Output&quot;, sprintf(&quot;%s_vs_%s_Kallisto_with_outliers_R&quot;,groups[1], groups[2])), showWarnings = FALSE)
+output_dir&lt;-file.path(&quot;C:/Users/rpmello/Desktop/Data Analysis RNASeq/Projeto_Kallisto_DESeq_EdgeR/Output&quot;, sprintf(&quot;%s_vs_%s_Kallisto_with_outliers_R&quot;,groups[1], groups[2]))
+dir.create(file.path(output_dir, &quot;Figures&quot;), showWarnings = FALSE)
+sprintf(&quot;Comparison of %s and %s.&quot;, groups[1], groups[2])</code></pre>
+<pre><code>## [1] &quot;Comparison of Goat_milkJ and No_milkJ.&quot;</code></pre>
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, results = &quot;asis&quot;, include = TRUE, fig.path = file.path(output_dir,&quot;Figures&quot;), fig.width = 11, fig.height = 8, fig.show = &quot;animated&quot;)</code></pre>
+</div>
+</div>
+<div id="importing-results-from-kallisto" class="section level1">
+<h1><span class="header-section-number">3</span> Importing results from Kallisto</h1>
+<p>I will start creating a table of counts with all the samples.But for this I will have to import the counts data and the metadata.</p>
+<div id="import-metadata-table" class="section level2">
+<h2><span class="header-section-number">3.1</span> Import metadata table</h2>
+<p>Import the metadata and the outliers based on Poisson distances</p>
+<pre class="r"><code>setwd(&quot;C:/Users/rpmello/Desktop/Data Analysis RNASeq/Projeto_Kallisto_DESeq_EdgeR&quot;)
+metadata&lt;- read.csv(&quot;./Data/metadata.csv&quot;)
+tx2gene_k&lt;- read.csv(&quot;./Data/tx2gene_k.csv&quot;, header = T)</code></pre>
+</div>
+<div id="importing-abundance-data" class="section level2">
+<h2><span class="header-section-number">3.2</span> Importing abundance data</h2>
+<p>Create a variable for the path to the abundance files and insert it in the metadata table:</p>
+<pre class="r"><code>path_to_files&lt;- sprintf(&quot;C:/Users/rpmello/Desktop/Data Analysis RNASeq/Kallisto/%s/%s_kaltranscboot_trim&quot;, &quot;results&quot;, metadata$SampleID)
+path_to_files&lt;- cbind(path_to_files, metadata[,-c(1,3)])
+selectMetadata_k &lt;- path_to_files[path_to_files$SampleID %in% metadata$SampleID[which(metadata$Group_sectio %in% groups)],]
+selectMetadata_k&lt;-selectMetadata_k[order(selectMetadata_k$Group),]
+Path_kallisto&lt;- file.path(selectMetadata_k$path_to_files,&quot;abundance.h5&quot;)
+labels&lt;- c(paste0(selectMetadata_k$Group, 1:(length(selectMetadata_k$Group)/2)))
+selectMetadata_k$Labels&lt;- labels
+row.names(selectMetadata_k)&lt;-selectMetadata_k$Labels
+head(selectMetadata_k)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["path_to_files"],"name":[1],"type":["fctr"],"align":["left"]},{"label":["SampleID"],"name":[2],"type":["fctr"],"align":["left"]},{"label":["Pig"],"name":[3],"type":["fctr"],"align":["left"]},{"label":["Index"],"name":[4],"type":["int"],"align":["right"]},{"label":["Group"],"name":[5],"type":["fctr"],"align":["left"]},{"label":["Group_sectio"],"name":[6],"type":["fctr"],"align":["left"]},{"label":["Trial"],"name":[7],"type":["fctr"],"align":["left"]},{"label":["Time"],"name":[8],"type":["fctr"],"align":["left"]},{"label":["Section"],"name":[9],"type":["fctr"],"align":["left"]},{"label":["Diet"],"name":[10],"type":["fctr"],"align":["left"]},{"label":["Fed"],"name":[11],"type":["fctr"],"align":["left"]},{"label":["Ecoli"],"name":[12],"type":["fctr"],"align":["left"]},{"label":["SectionTimeFed"],"name":[13],"type":["fctr"],"align":["left"]},{"label":["TimeSectionFedChal"],"name":[14],"type":["fctr"],"align":["left"]},{"label":["Description"],"name":[15],"type":["fctr"],"align":["left"]},{"label":["TRT"],"name":[16],"type":["fctr"],"align":["left"]},{"label":["Collection"],"name":[17],"type":["fctr"],"align":["left"]},{"label":["RNA_ext"],"name":[18],"type":["int"],"align":["right"]},{"label":["Lib_const"],"name":[19],"type":["fctr"],"align":["left"]},{"label":["Suceptability"],"name":[20],"type":["fctr"],"align":["left"]},{"label":["Lane"],"name":[21],"type":["int"],"align":["right"]},{"label":["Weight_3Week"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["..22"],"name":[23],"type":["lgl"],"align":["right"]},{"label":["RIN"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["Labels"],"name":[25],"type":["chr"],"align":["left"]}],"data":[{"1":"C:/Users/rpmello/Desktop/Data Analysis RNASeq/Kallisto/results/index1L4_kaltranscboot_trim","2":"index1L4","3":"31_2","4":"1","5":"Goat_milk","6":"Goat_milkJ","7":"mhLZ","8":"Wk5","9":"Jejunum","10":"Mal","11":"Goat","12":"No","13":"Jej_5MalGoat","14":"Wk5_Jej_MalGoat","15":"31_2Jej","16":"MalGoat","17":"6_16P","18":"8","19":"8_25","20":"NA","21":"4","22":"8.1","23":"NA","24":"7.7","25":"Goat_milk1"},{"1":"C:/Users/rpmello/Desktop/Data Analysis RNASeq/Kallisto/results/index2L5_kaltranscboot_trim","2":"index2L5","3":"31_3","4":"2","5":"Goat_milk","6":"Goat_milkJ","7":"mhLZ","8":"Wk5","9":"Jejunum","10":"Mal","11":"Goat","12":"No","13":"Jej_5MalGoat","14":"Wk5_Jej_MalGoat","15":"31_3Jej","16":"MalGoat","17":"6_16A","18":"8","19":"10_8","20":"NA","21":"5","22":"7.0","23":"NA","24":"9.2","25":"Goat_milk2"},{"1":"C:/Users/rpmello/Desktop/Data Analysis RNASeq/Kallisto/results/index3L6_kaltranscboot_trim","2":"index3L6","3":"31_13","4":"3","5":"Goat_milk","6":"Goat_milkJ","7":"mhLZ","8":"Wk5","9":"Jejunum","10":"Mal","11":"Goat","12":"No","13":"Jej_5MalGoat","14":"Wk5_Jej_MalGoat","15":"31_13Jej","16":"MalGoat","17":"6_16A","18":"9","19":"8_27","20":"NA","21":"6","22":"9.2","23":"NA","24":"7.8","25":"Goat_milk3"},{"1":"C:/Users/rpmello/Desktop/Data Analysis RNASeq/Kallisto/results/index8L3_kaltranscboot_trim","2":"index8L3","3":"29_13","4":"8","5":"Goat_milk","6":"Goat_milkJ","7":"mhLZ","8":"Wk5","9":"Jejunum","10":"Mal","11":"Goat","12":"No","13":"Jej_5MalGoat","14":"Wk5_Jej_MalGoat","15":"29_13Jej","16":"MalGoat","17":"6_17P","18":"7","19":"8_27","20":"NA","21":"3","22":"6.5","23":"NA","24":"8.6","25":"Goat_milk4"},{"1":"C:/Users/rpmello/Desktop/Data Analysis RNASeq/Kallisto/results/index5L1_kaltranscboot_trim","2":"index5L1","3":"9_5","4":"5","5":"No_milk","6":"No_milkJ","7":"mhLF","8":"Wk5","9":"Jejunum","10":"Mal","11":"No","12":"No","13":"Jej_5Mal","14":"Wk5_Jej_MalNo","15":"9_5Jej","16":"5Mal","17":"4_4","18":"12","19":"8_27","20":"NA","21":"1","22":"7.7","23":"NA","24":"9.5","25":"No_milk1"},{"1":"C:/Users/rpmello/Desktop/Data Analysis RNASeq/Kallisto/results/index6L2_kaltranscboot_trim","2":"index6L2","3":"6_13","4":"6","5":"No_milk","6":"No_milkJ","7":"mhLF","8":"Wk5","9":"Jejunum","10":"Mal","11":"No","12":"No","13":"Jej_5Mal","14":"Wk5_Jej_MalNo","15":"6_13Jej","16":"5Mal","17":"4_4","18":"11","19":"8_27","20":"NA","21":"2","22":"5.4","23":"NA","24":"8.1","25":"No_milk2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>names(Path_kallisto)&lt;-labels</code></pre>
+<div id="import-the-data-using-tximport" class="section level3">
+<h3><span class="header-section-number">3.2.1</span> Import the data using tximport</h3>
+<p>The resulting counts table is :</p>
+<pre class="r"><code>head(as.data.frame(txikallisto$counts))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Goat_milk1"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["Goat_milk2"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Goat_milk3"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Goat_milk4"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["No_milk1"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["No_milk2"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["No_milk3"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["No_milk4"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"414.0061","2":"698.0445","3":"1518.012","4":"405.000","5":"434.002","6":"383.0032","7":"473.0050","8":"285.000","_rn_":"ENSSSCG00000000002"},{"1":"3345.1919","2":"3141.2844","3":"2693.875","4":"6606.466","5":"6514.742","6":"7902.7155","7":"6129.2895","8":"2990.395","_rn_":"ENSSSCG00000000003"},{"1":"285.0000","2":"173.0000","3":"305.000","4":"152.000","5":"196.000","6":"203.0000","7":"166.0000","8":"144.000","_rn_":"ENSSSCG00000000005"},{"1":"93.0000","2":"323.0000","3":"57.000","4":"632.000","5":"1275.000","6":"531.0000","7":"870.0000","8":"188.000","_rn_":"ENSSSCG00000000006"},{"1":"410.0000","2":"320.0000","3":"547.000","4":"372.000","5":"407.000","6":"432.0000","7":"422.0000","8":"349.000","_rn_":"ENSSSCG00000000007"},{"1":"1200.1717","2":"1656.0425","3":"1734.321","4":"2415.592","5":"2705.921","6":"2456.4841","7":"925.3221","8":"1095.538","_rn_":"ENSSSCG00000000010"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+<div id="deseq2" class="section level1">
+<h1><span class="header-section-number">4</span> DESeq2</h1>
+<p>I will follow the DESeq2 tutorial found <a href="https://github.com/mikelove/asthma">here</a> and <a href="Angus_workshop">here</a> on the counts data from kallisto.</p>
+<div id="removing-dependent-variables" class="section level3">
+<h3><span class="header-section-number">4.0.1</span> Removing dependent variables</h3>
+<p>I will remove the metadata that does not present a variation in this comparison or have all unique values in this comparison</p>
+<pre class="r"><code>group&lt;-selectMetadata_k$Group
+batch_effects&lt;-sapply(1:ncol(selectMetadata_k), function(i){length(unique(selectMetadata_k[,i]))!= 1 &amp; length(unique(selectMetadata_k[,i])) != length(selectMetadata_k[,i])})
+batch_effects&lt;-selectMetadata_k[,batch_effects]
+dependent&lt;-sapply(1:ncol(batch_effects), function(i){length(unique(batch_effects[1:4,i])) == 1 &amp; length(unique(batch_effects[5:8,i])) == 1})
+independent&lt;-which(!dependent)
+batch_effects_k&lt;-batch_effects[,independent]
+batch_effects_k$Group&lt;-group
+batch_effects_k</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Index"],"name":[1],"type":["int"],"align":["right"]},{"label":["Trial"],"name":[2],"type":["fctr"],"align":["left"]},{"label":["Collection"],"name":[3],"type":["fctr"],"align":["left"]},{"label":["RNA_ext"],"name":[4],"type":["fctr"],"align":["left"]},{"label":["Lib_const"],"name":[5],"type":["fctr"],"align":["left"]},{"label":["Lane"],"name":[6],"type":["fctr"],"align":["left"]},{"label":["Litter"],"name":[7],"type":["fctr"],"align":["left"]},{"label":["Group"],"name":[8],"type":["fctr"],"align":["left"]}],"data":[{"1":"1","2":"mhLZ","3":"6_16P","4":"8","5":"8_25","6":"4","7":"31","8":"Goat_milk","_rn_":"Goat_milk1"},{"1":"2","2":"mhLZ","3":"6_16A","4":"8","5":"10_8","6":"5","7":"31","8":"Goat_milk","_rn_":"Goat_milk2"},{"1":"3","2":"mhLZ","3":"6_16A","4":"9","5":"8_27","6":"6","7":"31","8":"Goat_milk","_rn_":"Goat_milk3"},{"1":"8","2":"mhLZ","3":"6_17P","4":"7","5":"8_27","6":"3","7":"29","8":"Goat_milk","_rn_":"Goat_milk4"},{"1":"5","2":"mhLF","3":"4_4","4":"12","5":"8_27","6":"1","7":"9","8":"No_milk","_rn_":"No_milk1"},{"1":"6","2":"mhLF","3":"4_4","4":"11","5":"8_27","6":"2","7":"6","8":"No_milk","_rn_":"No_milk2"},{"1":"7","2":"mhLF","3":"4_3","4":"11","5":"8_27","6":"3","7":"7","8":"No_milk","_rn_":"No_milk3"},{"1":"8","2":"mhLZ","3":"6_17A","4":"8","5":"8_27","6":"4","7":"30","8":"No_milk","_rn_":"No_milk4"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>From now on I will use the manual from <a href="https://bioconductor.org/packages/release/bioc/vignettes/RUVSeq/inst/doc/RUVSeq.pdf">RUVSeq</a> and the manual from <a href="https://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#using-ruv-with-deseq2">DESeq2</a></p>
+</div>
+<div id="deseq-object" class="section level2">
+<h2><span class="header-section-number">4.1</span> DESeq object</h2>
+<p>Creating a DESeqDataSet for the in this case we will use the design ~Group, because, for know we are only interested in the normalized counts to filter low counts and calculate the variation varible with RUV.</p>
+<pre class="r"><code>library(DESeq2)
+dds_k &lt;-DESeqDataSetFromTximport(txikallisto, batch_effects_k, as.formula(&quot;~Group&quot;))</code></pre>
+<pre><code>## using counts and average transcript lengths from tximport</code></pre>
+<pre class="r"><code>#It doesn&#39;t matter the formula now, because I am just interested in the counts, but I 
+dds_k&lt;-estimateSizeFactors(dds_k)</code></pre>
+<pre><code>## using &#39;avgTxLength&#39; from assays(dds), correcting for library size</code></pre>
+<pre class="r"><code>dds_k&lt;-DESeq(dds_k)</code></pre>
+<pre><code>## using pre-existing normalization factors</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## gene-wise dispersion estimates</code></pre>
+<pre><code>## mean-dispersion relationship</code></pre>
+<pre><code>## final dispersion estimates</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<div id="filtering-low-expressed-genes" class="section level3">
+<h3><span class="header-section-number">4.1.1</span> Filtering low expressed genes</h3>
+<p>I wil remove the genes if low counts, and I am being very stringent here, removing the ones tha have lower than 20 counts in all the samples and the ones that have less then 5 counts in at least two samples.</p>
+<p>I will use the <a href="http://bioconductor.org/packages/release/bioc/manuals/EDASeq/man/EDASeq.pdf">EDASeq</a> package just to create an object were I can store the data and the metadata for multiple analysis.</p>
+<pre class="r"><code>library(EDASeq)
+library(RColorBrewer)
+#creating a set with the expression dat
+set_k&lt;-newSeqExpressionSet(DESeq2::counts(dds_k), phenoData= batch_effects_k)
+set_k</code></pre>
+<p>SeqExpressionSet (storageMode: lockedEnvironment) assayData: 22630 features, 8 samples element names: counts, normalizedCounts, offset protocolData: none phenoData sampleNames: Goat_milk1 Goat_milk2 … No_milk4 (8 total) varLabels: Index Trial … Group (8 total) varMetadata: labelDescription featureData: none experimentData: use ‘experimentData(object)’ Annotation:</p>
+<pre class="r"><code>colors&lt;-brewer.pal(4,&quot;Set2&quot;)
+idx  &lt;- rowSums(EDASeq::counts(set_k) &gt; 5) &gt;= 2
+set_k  &lt;- set_k[idx, ]
+filter&lt;-apply(EDASeq::counts(set_k),1,function(x){length(x[x&gt;5])&gt;2})
+set_k &lt;-set_k[filter,]
+sprintf(&quot;Removed %s genes with low counts from %s total genes&quot;, nrow(EDASeq::counts(dds_k))-nrow(EDASeq::counts(set_k)),nrow(DESeq2::counts(dds_k)))</code></pre>
+<p>[1] “Removed 6435 genes with low counts from 22630 total genes”</p>
+</div>
+</div>
+<div id="ruvseq" class="section level2">
+<h2><span class="header-section-number">4.2</span> RUVSeq</h2>
+<p>The number of sig DE genes with mod1 (~Group) was:</p>
+<pre class="r"><code>res&lt;-results(dds_k)
+sigres&lt;-res[!is.na(res$padj),]
+sigres&lt;-sigres[sigres$padj&lt;0.1 &amp; sigres$log2FoldChange&gt;1| sigres$log2FoldChange&lt; -1,]
+dim(sigres)</code></pre>
+<p>[1] 1122 6</p>
+<div id="box-plot-of-the-counts-per-sample" class="section level3">
+<h3><span class="header-section-number">4.2.1</span> Box plot of the counts per sample</h3>
+<p>We can analyze the variation of the counts before normalization and reduced variation.</p>
+<pre class="r"><code>plotRLE(set_k, outline =F, ylim=c(-2,2), col=colors[set_k$Group])</code></pre>
+<div class="figure">
+<img src="Figuresbox_plot_counts-1.png" />
+
+</div>
+<pre class="r"><code>plotPCA(set_k, col=colors[set_k$Group])</code></pre>
+<div class="figure">
+<img src="Figuresbox_plot_counts-2.png" />
+
+</div>
+</div>
+<div id="upper-quartile-normalization" class="section level3">
+<h3><span class="header-section-number">4.2.2</span> Upper quartile normalization</h3>
+<p>The upper quartile normalization <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-94">(UQ)</a> normalizes the data accounting for the most highly expressed transcripts, since there is a bias on the number of reads associated to them, i.e, more expresssed trancripts generate more reads and futhermore the number of reads on these highly expressed genes is proportional to the total number of reads in the sample (if samples are in individual lanes or in the same lane), which is not the case for me. <a href="http://vinaykmittal.blogspot.com/2013/10/fpkmrpkm-normalization-caveat-and-upper.html">Here</a>a more human explanation. And <a href="https://academic.oup.com/bib/article/14/6/671/189645">here</a> a more recent paper on RNA data normalization.</p>
+<pre class="r"><code>set_n&lt;-betweenLaneNormalization(set_k,which = &quot;upper&quot;)
+set_n$Group&lt;-factor(set_n$Group)
+plotRLE(set_n, outline=F, col=colors[set_n$Group])</code></pre>
+<div class="figure">
+<img src="Figuresupper-1.png" />
+
+</div>
+<pre class="r"><code>plotPCA(set_n,col=colors[set_n$Group])</code></pre>
+<div class="figure">
+<img src="Figuresupper-2.png" />
+
+</div>
+</div>
+<div id="using-empirical-control-genes" class="section level3">
+<h3><span class="header-section-number">4.2.3</span> Using empirical control genes</h3>
+<p>Since no spike in were used we will use the genes that have least changed between samples ( least significantly DE genes ) and use them as controls for the unwanted factors. So first we do a DE analysis and find the genes and then we do the normalization.</p>
+</div>
+<div id="empirical-controls-using-the-prior-de-analisis-using-deseq2" class="section level3">
+<h3><span class="header-section-number">4.2.4</span> Empirical controls using the prior DE analisis using DESeq2</h3>
+<p>Now we are going to use the DESeq2 to do DE analysis so we can pick the least DE genes as controls.In this case I will estimate only one unwanted variacen variable.</p>
+<pre class="r"><code>#Using RUVSeq
+library(RUVSeq)
+not.sig &lt;- rownames(res)[which(res$pvalue &gt; .2)]
+empirical &lt;- rownames(set_n)[ rownames(set_n) %in% not.sig ]
+if(&quot;RDAVIDWebService&quot; %in% (.packages())){
+  detach(&quot;package:RDAVIDWebService&quot;, unload=TRUE) 
+}
+set_k_n &lt;- RUVg(set_n, empirical, k=1)
+pData(set_k_n)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Index"],"name":[1],"type":["int"],"align":["right"]},{"label":["Trial"],"name":[2],"type":["fctr"],"align":["left"]},{"label":["Collection"],"name":[3],"type":["fctr"],"align":["left"]},{"label":["RNA_ext"],"name":[4],"type":["fctr"],"align":["left"]},{"label":["Lib_const"],"name":[5],"type":["fctr"],"align":["left"]},{"label":["Lane"],"name":[6],"type":["fctr"],"align":["left"]},{"label":["Litter"],"name":[7],"type":["fctr"],"align":["left"]},{"label":["Group"],"name":[8],"type":["fctr"],"align":["left"]},{"label":["W_1"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"mhLZ","3":"6_16P","4":"8","5":"8_25","6":"4","7":"31","8":"Goat_milk","9":"-0.31942112","_rn_":"Goat_milk1"},{"1":"2","2":"mhLZ","3":"6_16A","4":"8","5":"10_8","6":"5","7":"31","8":"Goat_milk","9":"0.03681587","_rn_":"Goat_milk2"},{"1":"3","2":"mhLZ","3":"6_16A","4":"9","5":"8_27","6":"6","7":"31","8":"Goat_milk","9":"-0.30101524","_rn_":"Goat_milk3"},{"1":"8","2":"mhLZ","3":"6_17P","4":"7","5":"8_27","6":"3","7":"29","8":"Goat_milk","9":"0.39391471","_rn_":"Goat_milk4"},{"1":"5","2":"mhLF","3":"4_4","4":"12","5":"8_27","6":"1","7":"9","8":"No_milk","9":"0.45675045","_rn_":"No_milk1"},{"1":"6","2":"mhLF","3":"4_4","4":"11","5":"8_27","6":"2","7":"6","8":"No_milk","9":"0.21535603","_rn_":"No_milk2"},{"1":"7","2":"mhLF","3":"4_3","4":"11","5":"8_27","6":"3","7":"7","8":"No_milk","9":"0.13261868","_rn_":"No_milk3"},{"1":"8","2":"mhLZ","3":"6_17A","4":"8","5":"8_27","6":"4","7":"30","8":"No_milk","9":"-0.61501939","_rn_":"No_milk4"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Using the unwanted variance variable in DESeq ( ~ W1 + Group).</p>
+<pre class="r"><code>ddsruv &lt;- dds_k
+ddsruv$W1 &lt;- set_k_n$W_1
+design(ddsruv) &lt;- ~ W1 + Group
+dds_k&lt;-ddsruv</code></pre>
+<p>The resulting counts are displayed here:</p>
+<pre class="r"><code>head(as.data.frame(DESeq2::counts(dds_k, normalized=TRUE)))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Goat_milk1"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["Goat_milk2"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Goat_milk3"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Goat_milk4"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["No_milk1"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["No_milk2"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["No_milk3"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["No_milk4"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"551.0959","2":"686.6475","3":"1327.55042","4":"410.1961","5":"378.4260","6":"349.7065","7":"429.9860","8":"339.4960","_rn_":"ENSSSCG00000000002"},{"1":"4458.2867","2":"3079.4614","3":"2326.33420","4":"6782.9208","5":"5720.7384","6":"7226.7341","7":"5524.3852","8":"3565.8059","_rn_":"ENSSSCG00000000003"},{"1":"378.2997","2":"169.7085","3":"266.96441","4":"154.7776","5":"170.3891","6":"185.8219","7":"150.1362","8":"172.3978","_rn_":"ENSSSCG00000000005"},{"1":"122.6471","2":"317.5741","3":"49.24644","4":"645.7982","5":"1124.4444","6":"481.9215","7":"786.4089","8":"226.9983","_rn_":"ENSSSCG00000000006"},{"1":"538.0184","2":"310.4923","3":"481.76676","4":"375.7456","5":"355.8686","6":"391.2160","7":"388.7060","8":"422.4486","_rn_":"ENSSSCG00000000007"},{"1":"1606.4539","2":"1638.3389","3":"1514.48791","4":"2468.9091","5":"2361.0315","6":"2225.7077","7":"835.6538","8":"1297.9465","_rn_":"ENSSSCG00000000010"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="calculating-the-poisson-distance" class="section level2">
+<h2><span class="header-section-number">4.3</span> Calculating the poisson distance</h2>
+<div id="heatmap-of-the-log-transformed-counts" class="section level3">
+<h3><span class="header-section-number">4.3.1</span> Heatmap of the log transformed counts</h3>
+<pre class="r"><code>hc&lt;- hclust(poisd_k$dd)
+heatmap.2(samplePoisDistMatrix_k, Rowv=as.dendrogram(hc), symm=T, trace=&quot;none&quot;, col= colors, labCol=F)</code></pre>
+<p><img src="Figuresheatmap_pois_log-1.png" /><!-- --></p>
+</div>
+<div id="we-can-also-see-the-pca-plot" class="section level3">
+<h3><span class="header-section-number">4.3.2</span> We can also see the PCA plot</h3>
+<pre class="r"><code>library(ggplot2)
+z &lt;-plotPCA(rlogdds_k, intgroup = c( &quot;Group&quot;))
+z+ geom_text(aes(label = selectMetadata_k$Pig))</code></pre>
+<p><img src="Figureslogcounts_PCA-1.png" /><!-- --></p>
+</div>
+</div>
+<div id="de-analysis" class="section level2">
+<h2><span class="header-section-number">4.4</span> DE analysis</h2>
+<p>Using the desing, we have the following results:</p>
+<p>Summary of the results:</p>
+<pre class="r"><code>summary(res_k)</code></pre>
+<p>out of 15600 with nonzero total read count adjusted p-value &lt; 0.1 LFC &gt; 0 (up) : 696, 4.5% LFC &lt; 0 (down) : 686, 4.4% outliers [1] : 0, 0% low counts [2] : 605, 3.9% (mean count &lt; 14) [1] see ‘cooksCutoff’ argument of ?results [2] see ‘independentFiltering’ argument of ?results</p>
+<pre class="r"><code>res.sort&lt;- res_k[order(res_k$pvalue), ]</code></pre>
+<div id="significant-de-genes" class="section level3">
+<h3><span class="header-section-number">4.4.1</span> Significant DE genes</h3>
+<p>Considering a padj &lt; 0.1 being significant we can subset the significant differentiated genes and we have this number of genes with padj &lt; 0.1 L2FC 1</p>
+<pre class="r"><code>res_k&lt;- as.data.frame(res_k)
+resSig_Kal &lt;- subset(res_k, padj&lt; 0.1)
+resSig_Kal &lt;- subset(resSig_Kal, log2FoldChange &lt; -1 | log2FoldChange &gt; 1)
+saveRDS(resSig_Kal, file = file.path(output_dir,sprintf(&quot;%s_vs_%s_resSig_Kal_with_outliers.RDS&quot;,groups[1], groups[2])))
+dim(resSig_Kal)</code></pre>
+<p>[1] 738 6</p>
+<div id="we-can-be-more-stringent-and-put-the-log2foldchange-values--1.5-or-1.5" class="section level4">
+<h4><span class="header-section-number">4.4.1.1</span> We can be more stringent and put the log2foldchange values &lt; -1.5 or &gt; 1.5</h4>
+<pre class="r"><code>resSig_Kal1.5 &lt;- subset(resSig_Kal, log2FoldChange &lt; -1.5 | log2FoldChange &gt; 1.5)
+dim(resSig_Kal1.5)</code></pre>
+<p>[1] 331 6</p>
+</div>
+</div>
+<div id="sorting-down-and-upregulated-genes" class="section level3">
+<h3><span class="header-section-number">4.4.2</span> Sorting Down and upregulated genes</h3>
+<p>We can use the log2foldchange display the most variable genes.</p>
+<div id="the-top-downregulated-genes" class="section level4">
+<h4><span class="header-section-number">4.4.2.1</span> The top downregulated genes:</h4>
+<p>top downregulated genes ( based on l2fc) and total number of downregulated genes:</p>
+<pre class="r"><code># sorting by the Log2FoldChange
+head(as.data.frame(resSig_Kal[order(resSig_Kal$log2FoldChange), ]),30) # stronger downregulation</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["baseMean"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["log2FoldChange"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["lfcSE"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["stat"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["pvalue"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["padj"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"12894.42382","2":"-30.000000","3":"2.5306666","4":"-11.854584","5":"2.037329e-32","6":"1.527488e-28","_rn_":"ENSSSCG00000035208"},{"1":"1819.67183","2":"-8.627548","3":"1.7720136","4":"-4.868782","5":"1.122882e-06","6":"6.476007e-04","_rn_":"ENSSSCG00000036086"},{"1":"2664.62845","2":"-7.419390","3":"1.7365449","4":"-4.272501","5":"1.932925e-05","6":"3.970440e-03","_rn_":"ENSSSCG00000028674"},{"1":"1556.35769","2":"-6.503924","3":"1.6180867","4":"-4.019515","5":"5.831797e-05","6":"8.152915e-03","_rn_":"ENSSSCG00000021812"},{"1":"72.47969","2":"-6.219872","3":"2.0632977","4":"-3.014529","5":"2.573783e-03","6":"5.553650e-02","_rn_":"ENSSSCG00000037437"},{"1":"866.68478","2":"-5.729256","3":"1.7899527","4":"-3.200787","5":"1.370530e-03","6":"4.021742e-02","_rn_":"ENSSSCG00000017037"},{"1":"172.26007","2":"-5.492247","3":"1.4933064","4":"-3.677911","5":"2.351524e-04","6":"1.645826e-02","_rn_":"ENSSSCG00000005360"},{"1":"437.84616","2":"-5.291085","3":"1.4202410","4":"-3.725484","5":"1.949407e-04","6":"1.492676e-02","_rn_":"ENSSSCG00000030246"},{"1":"125.11024","2":"-5.237367","3":"1.5916121","4":"-3.290605","5":"9.997211e-04","6":"3.543929e-02","_rn_":"ENSSSCG00000015294"},{"1":"630.24329","2":"-4.970317","3":"1.4618833","4":"-3.399941","5":"6.740044e-04","6":"2.921011e-02","_rn_":"ENSSSCG00000004699"},{"1":"1129.68521","2":"-4.947659","3":"1.3172504","4":"-3.756050","5":"1.726160e-04","6":"1.419064e-02","_rn_":"ENSSSCG00000036445"},{"1":"157.36340","2":"-4.937983","3":"1.2384903","4":"-3.987099","5":"6.688620e-05","6":"8.389092e-03","_rn_":"ENSSSCG00000032499"},{"1":"454.88390","2":"-4.933425","3":"1.2437516","4":"-3.966568","5":"7.291496e-05","6":"8.428526e-03","_rn_":"ENSSSCG00000015098"},{"1":"394.19985","2":"-4.931848","3":"1.4299437","4":"-3.448980","5":"5.627073e-04","6":"2.687196e-02","_rn_":"ENSSSCG00000030821"},{"1":"1285.55768","2":"-4.931073","3":"1.4259105","4":"-3.458193","5":"5.438122e-04","6":"2.639733e-02","_rn_":"ENSSSCG00000017283"},{"1":"349.32221","2":"-4.926807","3":"1.3164823","4":"-3.742403","5":"1.822688e-04","6":"1.450554e-02","_rn_":"ENSSSCG00000040377"},{"1":"441.02029","2":"-4.892573","3":"1.0321250","4":"-4.740292","5":"2.134107e-06","6":"8.648902e-04","_rn_":"ENSSSCG00000035542"},{"1":"361.88320","2":"-4.714600","3":"1.2604094","4":"-3.740530","5":"1.836324e-04","6":"1.450554e-02","_rn_":"ENSSSCG00000028218"},{"1":"972.53495","2":"-4.707139","3":"1.1769118","4":"-3.999568","5":"6.345810e-05","6":"8.389092e-03","_rn_":"ENSSSCG00000007861"},{"1":"36.01382","2":"-4.645568","3":"1.7428727","4":"-2.665466","5":"7.688163e-03","6":"9.244909e-02","_rn_":"ENSSSCG00000039961"},{"1":"926.60879","2":"-4.609011","3":"1.3161009","4":"-3.502020","5":"4.617458e-04","6":"2.412501e-02","_rn_":"ENSSSCG00000039074"},{"1":"109.15436","2":"-4.604561","3":"1.2388622","4":"-3.716766","5":"2.017892e-04","6":"1.520517e-02","_rn_":"ENSSSCG00000015700"},{"1":"126.61289","2":"-4.501832","3":"1.3644585","4":"-3.299354","5":"9.690764e-04","6":"3.491468e-02","_rn_":"ENSSSCG00000000983"},{"1":"1569.35517","2":"-4.391272","3":"1.1233916","4":"-3.908941","5":"9.270157e-05","6":"9.832456e-03","_rn_":"ENSSSCG00000033417"},{"1":"203.11933","2":"-4.373471","3":"1.2775613","4":"-3.423296","5":"6.186667e-04","6":"2.782035e-02","_rn_":"ENSSSCG00000013777"},{"1":"213.35566","2":"-4.346577","3":"1.2334197","4":"-3.524005","5":"4.250762e-04","6":"2.262501e-02","_rn_":"ENSSSCG00000016720"},{"1":"335.67038","2":"-4.339225","3":"1.3336573","4":"-3.253628","5":"1.139413e-03","6":"3.696451e-02","_rn_":"ENSSSCG00000004332"},{"1":"157.14263","2":"-4.330495","3":"0.5694242","4":"-7.605042","5":"2.848121e-14","6":"1.423586e-10","_rn_":"ENSSSCG00000020909"},{"1":"1032.33756","2":"-4.257846","3":"1.2217522","4":"-3.485033","5":"4.920767e-04","6":"2.487387e-02","_rn_":"ENSSSCG00000007807"},{"1":"155.55478","2":"-4.197318","3":"1.3155601","4":"-3.190518","5":"1.420180e-03","6":"4.103199e-02","_rn_":"ENSSSCG00000009610"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>#Getting the up regulated or down regulated genes 
+downresSig_Kal&lt;-resSig_Kal[resSig_Kal$log2FoldChange &lt; -1,]
+downresSig_Kal&lt;-downresSig_Kal[order(downresSig_Kal$log2FoldChange),]
+dim(downresSig_Kal)</code></pre>
+<p>[1] 443 6</p>
+</div>
+<div id="the-top-upregulated" class="section level4">
+<h4><span class="header-section-number">4.4.2.2</span> The top upregulated:</h4>
+<p>Top upregulated genes and the total number of upregulated genes:</p>
+<pre class="r"><code>head(as.data.frame(resSig_Kal[order(-resSig_Kal$log2FoldChange), ]),30) #stronger upregulation</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["baseMean"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["log2FoldChange"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["lfcSE"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["stat"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["pvalue"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["padj"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"64.39742","2":"9.013134","3":"2.1563663","4":"4.179779","5":"2.917932e-05","6":"5.309026e-03","_rn_":"ENSSSCG00000005861"},{"1":"43.61523","2":"8.614452","3":"3.1057723","4":"2.773691","5":"5.542433e-03","6":"7.870150e-02","_rn_":"ENSSSCG00000039725"},{"1":"1637.65224","2":"5.813690","3":"0.3660792","4":"15.880962","5":"8.585119e-57","6":"1.287339e-52","_rn_":"ENSSSCG00000037358"},{"1":"1993.09953","2":"3.830346","3":"1.3713615","4":"2.793097","5":"5.220602e-03","6":"7.617655e-02","_rn_":"ENSSSCG00000001906"},{"1":"1762.51814","2":"3.257519","3":"0.5369273","4":"6.066964","5":"1.303505e-09","6":"1.776915e-06","_rn_":"ENSSSCG00000026594"},{"1":"2006.14726","2":"2.992984","3":"0.4657817","4":"6.425724","5":"1.312434e-10","6":"2.186661e-07","_rn_":"ENSSSCG00000016609"},{"1":"666.60417","2":"2.910881","3":"0.4369747","4":"6.661441","5":"2.711559e-11","6":"5.082478e-08","_rn_":"ENSSSCG00000008953"},{"1":"426.36256","2":"2.627426","3":"0.9363787","4":"2.805944","5":"5.016938e-03","6":"7.530429e-02","_rn_":"ENSSSCG00000035738"},{"1":"67.43768","2":"2.526920","3":"0.3968555","4":"6.367355","5":"1.923152e-10","6":"2.883767e-07","_rn_":"ENSSSCG00000026043"},{"1":"1453.42465","2":"2.272962","3":"0.3199000","4":"7.105227","5":"1.201252e-12","6":"4.503194e-09","_rn_":"ENSSSCG00000003882"},{"1":"33.33163","2":"2.220062","3":"0.6460671","4":"3.436272","5":"5.897794e-04","6":"2.740214e-02","_rn_":"ENSSSCG00000011979"},{"1":"371.63368","2":"2.183993","3":"0.5737468","4":"3.806545","5":"1.409215e-04","6":"1.259401e-02","_rn_":"ENSSSCG00000003726"},{"1":"97.06379","2":"2.169726","3":"0.6018222","4":"3.605261","5":"3.118391e-04","6":"1.870411e-02","_rn_":"ENSSSCG00000022724"},{"1":"35.27880","2":"2.161134","3":"0.6415094","4":"3.368827","5":"7.548871e-04","6":"3.127721e-02","_rn_":"ENSSSCG00000014186"},{"1":"732.04956","2":"2.134592","3":"0.5560860","4":"3.838601","5":"1.237373e-04","6":"1.197058e-02","_rn_":"ENSSSCG00000006931"},{"1":"24.40396","2":"2.130823","3":"0.7493439","4":"2.843585","5":"4.460911e-03","6":"7.213644e-02","_rn_":"ENSSSCG00000011128"},{"1":"17.02741","2":"2.124129","3":"0.6026395","4":"3.524710","5":"4.239473e-04","6":"2.262501e-02","_rn_":"ENSSSCG00000018028"},{"1":"233.33073","2":"2.100839","3":"0.3846839","4":"5.461208","5":"4.729046e-08","6":"5.065146e-05","_rn_":"ENSSSCG00000037635"},{"1":"3537.43507","2":"2.094972","3":"0.5854997","4":"3.578092","5":"3.461121e-04","6":"2.011609e-02","_rn_":"ENSSSCG00000037832"},{"1":"663.60031","2":"2.058762","3":"0.6088578","4":"3.381352","5":"7.213015e-04","6":"3.063999e-02","_rn_":"ENSSSCG00000017222"},{"1":"104.90222","2":"1.975958","3":"0.4874076","4":"4.054016","5":"5.034573e-05","6":"7.625598e-03","_rn_":"ENSSSCG00000029536"},{"1":"619.09139","2":"1.970038","3":"0.5208420","4":"3.782409","5":"1.553178e-04","6":"1.330852e-02","_rn_":"ENSSSCG00000006073"},{"1":"44.57887","2":"1.907165","3":"0.6359052","4":"2.999134","5":"2.707478e-03","6":"5.651284e-02","_rn_":"ENSSSCG00000013547"},{"1":"18.37950","2":"1.896952","3":"0.5934306","4":"3.196587","5":"1.390640e-03","6":"4.041212e-02","_rn_":"ENSSSCG00000000271"},{"1":"41.62442","2":"1.845717","3":"0.6688548","4":"2.759519","5":"5.788653e-03","6":"8.052028e-02","_rn_":"ENSSSCG00000005830"},{"1":"2904.02971","2":"1.845252","3":"0.4284145","4":"4.307165","5":"1.653600e-05","6":"3.700857e-03","_rn_":"ENSSSCG00000008648"},{"1":"49.61380","2":"1.795132","3":"0.5663792","4":"3.169488","5":"1.527076e-03","6":"4.238687e-02","_rn_":"ENSSSCG00000034817"},{"1":"2808.27215","2":"1.771898","3":"0.5577203","4":"3.177036","5":"1.487885e-03","6":"4.207927e-02","_rn_":"ENSSSCG00000002847"},{"1":"330.22544","2":"1.770279","3":"0.5537273","4":"3.197022","5":"1.388542e-03","6":"4.041212e-02","_rn_":"ENSSSCG00000015895"},{"1":"283.37333","2":"1.765792","3":"0.4020393","4":"4.392088","5":"1.122670e-05","6":"2.715232e-03","_rn_":"ENSSSCG00000017154"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>upresSig_Kal&lt;-resSig_Kal[resSig_Kal$log2FoldChange &gt; 1,]
+upresSig_Kal&lt;-upresSig_Kal[order(-upresSig_Kal$log2FoldChange),]
+dim(upresSig_Kal)</code></pre>
+<p>[1] 295 6</p>
+</div>
+</div>
+<div id="list-of-genes-with-padj-0.1-l2fc--1-or-1." class="section level3">
+<h3><span class="header-section-number">4.4.3</span> List of genes with padj &lt; 0.1, L2FC &lt; -1 or &gt; 1.</h3>
+<p>Now, we can use BiomaRt to convert the ensembl ID into gene names.</p>
+<p>For the downregulated genes ordered by padjusted and the total number of genes succefully converted by BiomaRt:</p>
+<pre class="r"><code>down_genes_names&lt;-transform(merge(as.data.frame(downresSig_Kal),down_genes_names,by.x=0, by.y =&quot;ensembl_gene_id&quot;,all=TRUE), row.names=Row.names, Row.names=NULL)
+down_genes_names_kal&lt;- down_genes_names[order(down_genes_names$padj),]
+#The number of genes  we were able to find the gene name on BiomaRt
+head(down_genes_names_kal, 30)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["baseMean"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["log2FoldChange"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["lfcSE"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["stat"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["pvalue"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["padj"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["external_gene_name"],"name":[7],"type":["chr"],"align":["left"]}],"data":[{"1":"12894.42382","2":"-30.000000","3":"2.5306666","4":"-11.854584","5":"2.037329e-32","6":"1.527488e-28","7":"","_rn_":"ENSSSCG00000035208"},{"1":"157.14263","2":"-4.330495","3":"0.5694242","4":"-7.605042","5":"2.848121e-14","6":"1.423586e-10","7":"","_rn_":"ENSSSCG00000020909"},{"1":"776.65838","2":"-3.285153","3":"0.4645756","4":"-7.071299","5":"1.534897e-12","6":"4.603155e-09","7":"","_rn_":"ENSSSCG00000039102"},{"1":"797.05579","2":"-2.481215","3":"0.3686966","4":"-6.729695","5":"1.700192e-11","6":"3.642054e-08","7":"","_rn_":"ENSSSCG00000032419"},{"1":"240.91754","2":"-2.451468","3":"0.4372460","4":"-5.606610","5":"2.063276e-08","6":"2.578236e-05","7":"DIO1","_rn_":"ENSSSCG00000028896"},{"1":"554.82686","2":"-2.491419","3":"0.4580302","4":"-5.439421","5":"5.345404e-08","6":"5.343622e-05","7":"","_rn_":"ENSSSCG00000031282"},{"1":"44293.34210","2":"-1.838166","3":"0.3584138","4":"-5.128612","5":"2.918856e-07","6":"2.431569e-04","7":"","_rn_":"ENSSSCG00000036224"},{"1":"804.24680","2":"-2.829766","3":"0.5536507","4":"-5.111104","5":"3.202818e-07","6":"2.527698e-04","7":"","_rn_":"ENSSSCG00000033813"},{"1":"3561.52811","2":"-1.581310","3":"0.3241206","4":"-4.878771","5":"1.067491e-06","6":"6.476007e-04","7":"","_rn_":"ENSSSCG00000011676"},{"1":"172.45803","2":"-1.334843","3":"0.2729451","4":"-4.890517","5":"1.005715e-06","6":"6.476007e-04","7":"","_rn_":"ENSSSCG00000015249"},{"1":"1819.67183","2":"-8.627548","3":"1.7720136","4":"-4.868782","5":"1.122882e-06","6":"6.476007e-04","7":"PAX5","_rn_":"ENSSSCG00000036086"},{"1":"80.48290","2":"-2.180376","3":"0.4463892","4":"-4.884473","5":"1.037057e-06","6":"6.476007e-04","7":"SOX8","_rn_":"ENSSSCG00000037970"},{"1":"43.58143","2":"-2.262699","3":"0.4681675","4":"-4.833097","5":"1.344253e-06","6":"6.950717e-04","7":"","_rn_":"ENSSSCG00000034698"},{"1":"382.05473","2":"-2.715079","3":"0.5697611","4":"-4.765294","5":"1.885786e-06","6":"8.648902e-04","7":"PHGDH","_rn_":"ENSSSCG00000006717"},{"1":"21344.50594","2":"-2.034906","3":"0.4287551","4":"-4.746081","5":"2.073954e-06","6":"8.648902e-04","7":"","_rn_":"ENSSSCG00000013973"},{"1":"49.71957","2":"-3.895741","3":"0.8216810","4":"-4.741184","5":"2.124729e-06","6":"8.648902e-04","7":"CHST8","_rn_":"ENSSSCG00000035222"},{"1":"441.02029","2":"-4.892573","3":"1.0321250","4":"-4.740292","5":"2.134107e-06","6":"8.648902e-04","7":"","_rn_":"ENSSSCG00000035542"},{"1":"391.05555","2":"-1.484967","3":"0.3117548","4":"-4.763252","5":"1.904978e-06","6":"8.648902e-04","7":"","_rn_":"ENSSSCG00000036654"},{"1":"1112.75670","2":"-2.081196","3":"0.4377231","4":"-4.754595","5":"1.988446e-06","6":"8.648902e-04","7":"","_rn_":"ENSSSCG00000038204"},{"1":"35.40981","2":"-2.404647","3":"0.5068619","4":"-4.744187","5":"2.093457e-06","6":"8.648902e-04","7":"","_rn_":"ENSSSCG00000039980"},{"1":"130.95202","2":"-2.324654","3":"0.4915476","4":"-4.729255","5":"2.253450e-06","6":"8.892231e-04","7":"CILP","_rn_":"ENSSSCG00000004928"},{"1":"1328.23689","2":"-2.870285","3":"0.6146524","4":"-4.669770","5":"3.015377e-06","6":"1.067321e-03","7":"","_rn_":"ENSSSCG00000037009"},{"1":"89.03818","2":"-3.086738","3":"0.6743449","4":"-4.577387","5":"4.708191e-06","6":"1.502113e-03","7":"","_rn_":"ENSSSCG00000036628"},{"1":"34.43622","2":"-3.335122","3":"0.7354918","4":"-4.534547","5":"5.772726e-06","6":"1.766572e-03","7":"","_rn_":"ENSSSCG00000032289"},{"1":"302.53714","2":"-1.711238","3":"0.3811504","4":"-4.489666","5":"7.133491e-06","6":"2.071383e-03","7":"TH","_rn_":"ENSSSCG00000039767"},{"1":"370.75340","2":"-2.170251","3":"0.4860550","4":"-4.465032","5":"8.005681e-06","6":"2.153327e-03","7":"","_rn_":"ENSSSCG00000040951"},{"1":"588.36430","2":"-1.130870","3":"0.2540096","4":"-4.452077","5":"8.504367e-06","6":"2.237245e-03","7":"PARM1","_rn_":"ENSSSCG00000008966"},{"1":"415.53003","2":"-2.271982","3":"0.5159958","4":"-4.403101","5":"1.067144e-05","6":"2.666971e-03","7":"LCN15","_rn_":"ENSSSCG00000038233"},{"1":"350.44750","2":"-2.272640","3":"0.5207010","4":"-4.364578","5":"1.273687e-05","6":"3.031576e-03","7":"TRH","_rn_":"ENSSSCG00000011596"},{"1":"157.86450","2":"-1.409936","3":"0.3291090","4":"-4.284099","5":"1.834810e-05","6":"3.914872e-03","7":"","_rn_":"ENSSSCG00000014910"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>sum(down_genes_names$external_gene_name != &quot;&quot;)</code></pre>
+<p>[1] 330</p>
+<p>For the upregulated genes ordered by padjusted and the total number of genes succefully converted by BiomaRt:</p>
+<pre class="r"><code>up_genes_names&lt;-transform(merge(as.data.frame(upresSig_Kal),up_genes_names,by.x=0, by.y =&quot;ensembl_gene_id&quot;,all=TRUE), row.names=Row.names, Row.names=NULL)
+up_genes_names_kal&lt;- up_genes_names[order(up_genes_names$padj),]
+#The number of genes  we were able to find the gene name on BiomaRt
+sum(up_genes_names$external_gene_name != &quot;&quot;)</code></pre>
+<p>[1] 243</p>
+<pre class="r"><code>head(up_genes_names_kal,30)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["baseMean"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["log2FoldChange"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["lfcSE"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["stat"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["pvalue"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["padj"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["external_gene_name"],"name":[7],"type":["chr"],"align":["left"]}],"data":[{"1":"1637.65224","2":"5.813690","3":"0.3660792","4":"15.880962","5":"8.585119e-57","6":"1.287339e-52","7":"","_rn_":"ENSSSCG00000037358"},{"1":"1453.42465","2":"2.272962","3":"0.3199000","4":"7.105227","5":"1.201252e-12","6":"4.503194e-09","7":"SLC5A9","_rn_":"ENSSSCG00000003882"},{"1":"3022.43271","2":"1.666110","3":"0.2379749","4":"7.001199","5":"2.537814e-12","6":"6.342421e-09","7":"TOM1L1","_rn_":"ENSSSCG00000017601"},{"1":"666.60417","2":"2.910881","3":"0.4369747","4":"6.661441","5":"2.711559e-11","6":"5.082478e-08","7":"CXCL8","_rn_":"ENSSSCG00000008953"},{"1":"2006.14726","2":"2.992984","3":"0.4657817","4":"6.425724","5":"1.312434e-10","6":"2.186661e-07","7":"SLC13A1","_rn_":"ENSSSCG00000016609"},{"1":"67.43768","2":"2.526920","3":"0.3968555","4":"6.367355","5":"1.923152e-10","6":"2.883767e-07","7":"","_rn_":"ENSSSCG00000026043"},{"1":"1762.51814","2":"3.257519","3":"0.5369273","4":"6.066964","5":"1.303505e-09","6":"1.776915e-06","7":"","_rn_":"ENSSSCG00000026594"},{"1":"1971.50354","2":"1.347013","3":"0.2430960","4":"5.541075","5":"3.006200e-08","6":"3.467536e-05","7":"","_rn_":"ENSSSCG00000001063"},{"1":"233.33073","2":"2.100839","3":"0.3846839","4":"5.461208","5":"4.729046e-08","6":"5.065146e-05","7":"","_rn_":"ENSSSCG00000037635"},{"1":"6113.29388","2":"1.683853","3":"0.3111861","4":"5.411079","5":"6.264612e-08","6":"5.871116e-05","7":"PARP15","_rn_":"ENSSSCG00000011875"},{"1":"2641.23300","2":"1.294716","3":"0.2500003","4":"5.178857","5":"2.232496e-07","6":"1.969193e-04","7":"","_rn_":"ENSSSCG00000008496"},{"1":"4102.01642","2":"1.266623","3":"0.2553499","4":"4.960342","5":"7.036933e-07","6":"5.275940e-04","7":"HERC6","_rn_":"ENSSSCG00000021712"},{"1":"1175.42107","2":"1.438328","3":"0.2935170","4":"4.900322","5":"9.567950e-07","6":"6.476007e-04","7":"ITGB8","_rn_":"ENSSSCG00000015375"},{"1":"78.50291","2":"1.405293","3":"0.2885845","4":"4.869607","5":"1.118205e-06","6":"6.476007e-04","7":"ASB15","_rn_":"ENSSSCG00000016606"},{"1":"1606.74101","2":"1.592114","3":"0.3277750","4":"4.857339","5":"1.189740e-06","6":"6.607462e-04","7":"FOS","_rn_":"ENSSSCG00000002383"},{"1":"1924.96280","2":"1.153918","3":"0.2383279","4":"4.841723","5":"1.287180e-06","6":"6.893308e-04","7":"KRCC1","_rn_":"ENSSSCG00000023294"},{"1":"204.65390","2":"1.392290","3":"0.2905777","4":"4.791454","5":"1.655771e-06","6":"8.276095e-04","7":"SLC9C1","_rn_":"ENSSSCG00000023918"},{"1":"2979.62004","2":"1.478286","3":"0.3129975","4":"4.722996","5":"2.323958e-06","6":"8.935322e-04","7":"SAMD9","_rn_":"ENSSSCG00000027372"},{"1":"3085.76018","2":"1.197467","3":"0.2550431","4":"4.695155","5":"2.664047e-06","6":"9.986845e-04","7":"TMEM106B","_rn_":"ENSSSCG00000032740"},{"1":"4401.13171","2":"1.305969","3":"0.2786608","4":"4.686592","5":"2.777922e-06","6":"1.015974e-03","7":"","_rn_":"ENSSSCG00000032990"},{"1":"77.26345","2":"1.571613","3":"0.3367715","4":"4.666706","5":"3.060673e-06","6":"1.067321e-03","7":"CLHC1","_rn_":"ENSSSCG00000008402"},{"1":"3589.92046","2":"1.688501","3":"0.3634999","4":"4.645120","5":"3.398787e-06","6":"1.158291e-03","7":"","_rn_":"ENSSSCG00000033716"},{"1":"4807.08530","2":"1.658499","3":"0.3577698","4":"4.635661","5":"3.557993e-06","6":"1.185602e-03","7":"","_rn_":"ENSSSCG00000034735"},{"1":"182.89973","2":"1.148514","3":"0.2498802","4":"4.596259","5":"4.301449e-06","6":"1.402179e-03","7":"CDA","_rn_":"ENSSSCG00000021259"},{"1":"2033.01613","2":"1.294839","3":"0.2843605","4":"4.553514","5":"5.275714e-06","6":"1.648111e-03","7":"","_rn_":"ENSSSCG00000016044"},{"1":"819.57291","2":"1.170166","3":"0.2597165","4":"4.505549","5":"6.620147e-06","6":"1.985382e-03","7":"FRMD4B","_rn_":"ENSSSCG00000011511"},{"1":"2201.12812","2":"1.684331","3":"0.3752808","4":"4.488187","5":"7.183190e-06","6":"2.071383e-03","7":"LRRC19","_rn_":"ENSSSCG00000005125"},{"1":"592.16630","2":"1.610840","3":"0.3596703","4":"4.478657","5":"7.511429e-06","6":"2.125168e-03","7":"GPAM","_rn_":"ENSSSCG00000010631"},{"1":"2571.51803","2":"1.391087","3":"0.3113789","4":"4.467505","5":"7.913716e-06","6":"2.153327e-03","7":"HPGD","_rn_":"ENSSSCG00000009699"},{"1":"1092.14944","2":"1.119592","3":"0.2527917","4":"4.428912","5":"9.470978e-06","6":"2.448574e-03","7":"TMF1","_rn_":"ENSSSCG00000011510"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>I will use the list to annotate the genes using the Biomart in Ensembl.</p>
+<pre class="r"><code>#I will get the IDS and will use the following code
+resSig_Kal&lt;- resSig_Kal[order(resSig_Kal$padj), ]
+gene_names_removed_outliers_kal&lt;- getBM(attributes = c(&quot;ensembl_gene_id&quot;,&quot;external_gene_name&quot;), filters= &quot;ensembl_gene_id&quot;, values = rownames(resSig_Kal), mart = Pig_ensembl)</code></pre>
+<pre><code>## Batch submitting query [==========================] 100% eta: 0s</code></pre>
+<pre class="r"><code>gene_names_removed_outliers_kal&lt;-transform(merge(as.data.frame(resSig_Kal),gene_names_removed_outliers_kal,by.x=0, by.y =&quot;ensembl_gene_id&quot;,all=TRUE), row.names=Row.names, Row.names=NULL)
+gene_names_removed_outliers_kal&lt;-as.data.frame(gene_names_removed_outliers_kal[order(gene_names_removed_outliers_kal$padj),])
+head(gene_names_removed_outliers_kal)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["baseMean"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["log2FoldChange"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["lfcSE"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["stat"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["pvalue"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["padj"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["external_gene_name"],"name":[7],"type":["chr"],"align":["left"]}],"data":[{"1":"1637.6522","2":"5.813690","3":"0.3660792","4":"15.880962","5":"8.585119e-57","6":"1.287339e-52","7":"","_rn_":"ENSSSCG00000037358"},{"1":"12894.4238","2":"-30.000000","3":"2.5306666","4":"-11.854584","5":"2.037329e-32","6":"1.527488e-28","7":"","_rn_":"ENSSSCG00000035208"},{"1":"157.1426","2":"-4.330495","3":"0.5694242","4":"-7.605042","5":"2.848121e-14","6":"1.423586e-10","7":"","_rn_":"ENSSSCG00000020909"},{"1":"1453.4247","2":"2.272962","3":"0.3199000","4":"7.105227","5":"1.201252e-12","6":"4.503194e-09","7":"SLC5A9","_rn_":"ENSSSCG00000003882"},{"1":"776.6584","2":"-3.285153","3":"0.4645756","4":"-7.071299","5":"1.534897e-12","6":"4.603155e-09","7":"","_rn_":"ENSSSCG00000039102"},{"1":"3022.4327","2":"1.666110","3":"0.2379749","4":"7.001199","5":"2.537814e-12","6":"6.342421e-09","7":"TOM1L1","_rn_":"ENSSSCG00000017601"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>dim(gene_names_removed_outliers_kal)</code></pre>
+<p>[1] 738 7</p>
+</div>
+</div>
+<div id="diagnostic-plots" class="section level2">
+<h2><span class="header-section-number">4.5</span> Diagnostic plots</h2>
+<p>To plot the counts of specific genes we can use the name of the gene or a a specific value related to it</p>
+<div id="volcano-plot" class="section level3">
+<h3><span class="header-section-number">4.5.1</span> Volcano plot</h3>
+<pre class="r"><code>plot(res_k$log2FoldChange, -log(res_k$pvalue),main =&quot;Volcano plot Kallisto data from DESeq2&quot;, xlab= &quot;Log2FoldChange&quot;, ylab = &quot;-log(Pvalue)&quot;, pch = 21, col=ifelse(res_k$pvalue &lt;0.001,&quot;red&quot;,&quot;black&quot;), xlim= c(-5,5), ylim =c(0,25), abline(v=c(-2,2)))</code></pre>
+<p><img src="Figuresvolcano_plot-1.png" /><!-- --></p>
+</div>
+<div id="plotting-the-lowest-padj-gene" class="section level3">
+<h3><span class="header-section-number">4.5.2</span> Plotting the lowest padj gene</h3>
+<pre class="r"><code>topGene&lt;- row.names(resSig_Kal[which.min(resSig_Kal$padj),])
+plotCounts(dds_k,gene= topGene,main = gene_names_removed_outliers_kal$external_gene_name[1], intgroup=&quot;Group&quot;)</code></pre>
+<p><img src="Figureslowest_padj-1.png" /><!-- --></p>
+</div>
+<div id="to-do-the-ma-plot" class="section level3">
+<h3><span class="header-section-number">4.5.3</span> to do the MA plot</h3>
+<pre class="r"><code>plotMA(res_k, ylim=c(-20,20))</code></pre>
+<p><img src="FiguresMAplot-1.png" /><!-- --></p>
+</div>
+<div id="to-plot-dispersion." class="section level3">
+<h3><span class="header-section-number">4.5.4</span> To plot dispersion.</h3>
+<p>(within group variability of each gene )</p>
+<pre class="r"><code>plotDispEsts(dds_k)</code></pre>
+<p><img src="Figuresdispersion_plot-1.png" /><!-- --></p>
+</div>
+<div id="histogram-of-pvalues" class="section level3">
+<h3><span class="header-section-number">4.5.5</span> histogram of pvalues</h3>
+<pre class="r"><code>hist(res_k$pvalue[res_k$baseMean&gt;1], breaks=20, col=&quot;grey50&quot;, border=&quot;white&quot;)</code></pre>
+<p><img src="Figureshist_pvalue-1.png" /><!-- --></p>
+</div>
+<div id="clustering" class="section level3">
+<h3><span class="header-section-number">4.5.6</span> Clustering</h3>
+<p>of rlog counts of the top 50 DE genes</p>
+<pre class="r"><code>heatmap.2(mat,Colv=F, trace=&quot;none&quot;, col=colors, ColSideColors=sidecols, labRow=F,scale=&quot;row&quot;)</code></pre>
+<pre><code>## Warning in heatmap.2(mat, Colv = F, trace = &quot;none&quot;, col = colors,
+## ColSideColors = sidecols, : Discrepancy: Colv is FALSE, while dendrogram is
+## `both&#39;. Omitting column dendogram.</code></pre>
+<p><img src="Figuresheatmap_kal-1.png" /><!-- --></p>
+</div>
+<div id="clustering-of-normalized-counts" class="section level3">
+<h3><span class="header-section-number">4.5.7</span> Clustering of normalized counts</h3>
+<p>150 more variable DE genes (if DE genes &lt; 150, all genes)</p>
+</div>
+</div>
+</div>
+<div id="prepare-for-the-heatmap" class="section level1">
+<h1><span class="header-section-number">5</span> Prepare for the heatmap</h1>
+<pre class="r"><code># Get some nicer colours
+mypalette &lt;- brewer.pal(11,&quot;RdYlBu&quot;)
+
+morecols &lt;- colorRampPalette(mypalette)
+
+# Load library for heatmap
+heatmap.2(highly_variable_norm_counts, col=rev(morecols(50)), trace=&quot;none&quot;,
+              main=&quot;Most variable genes across samples&quot;, scale=&quot;row&quot;,
+              labCol = labels)</code></pre>
+<p><img src="Figurestpm_heatmap-1.png" /><!-- --></p>
+<pre class="r"><code>#To save the gene lists in both the cluster( 100 more variable genes in the resSig_Salmon2 table) and in the resSig_Salmon2 so I can used the transcripts to annotation and the other downstream application like panther or DAVID.</code></pre>
+<p>Cluster with all the DE genes using TPM</p>
+<pre class="r"><code>DE_counts&lt;- tpmDE
+heatmap.2(DE_counts, col=rev(morecols(50)), trace=&quot;none&quot;,
+              main=&quot;Most variable genes across samples&quot;, scale=&quot;row&quot;,
+              labCol = labels)</code></pre>
+<p><img src="Figurescluster_tpmde_all1-1.png" /><!-- --></p>
+<div id="pathway-analysis" class="section level2">
+<h2><span class="header-section-number">5.1</span> Pathway Analysis</h2>
+<p>I will use the lists to do the Pathway analysis with ReactomePA and DAVIDWebService</p>
+<p>Fist, geting the GO terms for the DEgenes (padj,0.1, L2FC 1).</p>
+<p>For that, I will first connect to the DAVID brownser:</p>
+<p>To see the percentage of the genes that were identified by the DAVID</p>
+<pre class="r"><code>DAVID_results_DESeq_Kal$inDavid</code></pre>
+<p>[1] 0.600271</p>
+<p>And then you can create the results charts from DAVID and filter them by biological process:</p>
+<pre class="r"><code>DAVID_results_chart_kal&lt;- getFunctionalAnnotationChart(david)
+#If I want to create a file with the chart information I would use the following code:
+#DAVID_results_chart&lt;-DAVIDFunctionalAnnotationChartFile(DAVID_results_chart)
+DAVID_results_chart_DESeq_kal_BP&lt;-DAVID_results_chart_kal[DAVID_results_chart_kal$Category == &quot;GOTERM_BP_DIRECT&quot; &amp; DAVID_results_chart_kal$PValue &lt; 0.05,]</code></pre>
+<p>We can plot the 5 most enriched pathways and the genes associated to those pathways</p>
+<pre class="r"><code>if(dim(DAVID_results_chart_DESeq_kal_BP)[1]&gt;0){
+plot2D(DAVIDFunctionalAnnotationChart(DAVID_results_chart_DESeq_kal_BP[1:5,]),
+       color=c(&quot;FALSE&quot;=&quot;black&quot;, &quot;TRUE&quot;=&quot;green&quot;))
+# We can see the top 5 GO pathways for biological process, and note how the evidence is true in our data for each of the genes in the pathway( if it is present on our sample or not)
+}else{
+  print(&quot;No significant term found&quot;)
+}</code></pre>
+<p><img src="Figuresplot2D-1.png" /><!-- --></p>
+<div id="godag" class="section level3">
+<h3><span class="header-section-number">5.1.1</span> GODag</h3>
+<p>We can create a godag object from the functional chart</p>
+<pre class="r"><code>DAVIDGODag_DESeq_kal&lt;-DAVIDGODag(DAVIDFunctionalAnnotationChart(DAVID_results_chart_DESeq_kal_BP), type =&quot;BP&quot;,pvalueCutoff=.001)
+#I can isolate the significant ones by doing a dataframe but the resulting plot is the same 
+#sig_DAVID_RES_CHART&lt;- DAVID_results_chart_BP[DAVID_results_chart_BP$PValue &lt;0.001,]
+#sig_DAVID_RES_GODAG&lt;- DAVIDGODag(DAVIDFunctionalAnnotationChart(sig_DAVID_RES_CHART), type =&quot;BP&quot;,pvalueCutoff=.001)
+#we used a cutoff of 0.001 f or the pvalue. And now we can inspect the Dag object</code></pre>
+<p>We can get the most significant (p &lt;p=0.0001) categories (GO ID) and the summary of the analysis</p>
+<pre class="r"><code>sigCategories(DAVIDGODag_DESeq_kal, p=0.0001)</code></pre>
+<p>[1] “<a href="GO:0006954" class="uri">GO:0006954</a>” “<a href="GO:0006955" class="uri">GO:0006955</a>”</p>
+<pre class="r"><code>summary(DAVIDGODag_DESeq_kal)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["GOBPID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Pvalue"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Count"],"name":[3],"type":["int"],"align":["right"]},{"label":["Size"],"name":[4],"type":["int"],"align":["right"]},{"label":["Term"],"name":[5],"type":["chr"],"align":["left"]},{"label":["Percent"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["List.Total"],"name":[7],"type":["int"],"align":["right"]},{"label":["Pop.Total"],"name":[8],"type":["int"],"align":["right"]},{"label":["Fold.Enrichment"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["Bonferroni"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["Benjamini"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["FDR"],"name":[12],"type":["dbl"],"align":["right"]}],"data":[{"1":"GO:0006954","2":"1.321696e-05","3":"18","4":"187","5":"inflammatory response","6":"4.0632054","7":"310","8":"11368","9":"3.529826","10":"0.01822992","11":"0.01822992","12":"0.02175972"},{"1":"GO:0006955","2":"2.782570e-05","3":"18","4":"198","5":"immune response","6":"4.0632054","7":"310","8":"11368","9":"3.333724","10":"0.03799334","11":"0.01918062","12":"0.04580561"},{"1":"GO:0050853","2":"1.220616e-04","3":"6","4":"19","5":"B cell receptor signaling pathway","6":"1.3544018","7":"310","8":"11368","9":"11.580306","10":"0.15626778","11":"0.05506585","12":"0.20078685"},{"1":"GO:0010800","2":"5.764372e-04","3":"5","4":"15","5":"positive regulation of peptidyl-threonine phosphorylation","6":"1.1286682","7":"310","8":"11368","9":"12.223656","10":"0.55185211","11":"0.18180779","12":"0.94489464"},{"1":"GO:0042989","2":"6.418144e-04","3":"4","4":"7","5":"sequestering of actin monomers","6":"0.9029345","7":"310","8":"11368","9":"20.954839","10":"0.59085777","11":"0.16367542","12":"1.05152960"},{"1":"GO:0030593","2":"6.763981e-04","3":"7","4":"40","5":"neutrophil chemotaxis","6":"1.5801354","7":"310","8":"11368","9":"6.417419","10":"0.61009988","11":"0.14527666","12":"1.10789455"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>show(DAVIDGODag_DESeq_kal)</code></pre>
+<p>Gene to GO BP test for over-representation 146 GO BP ids tested (6 have p &lt; 0.001) Selected gene set size: 41 Gene universe size: NA Annotation package: DAVID.website</p>
+<pre class="r"><code># we can see by the FDR column that only the first 3 pathway are significant</code></pre>
+<p>And plot the terms in a graph form:</p>
+<pre class="r"><code>plotGOTermGraph(g=goDag(DAVIDGODag_DESeq_kal), r= DAVIDGODag_DESeq_kal, max.nchar= 20, node.shape=&quot;ellipse&quot;,node.colors=c(sig=&quot;red&quot;, not=&quot;white&quot;))</code></pre>
+<p><img src="Figuresplot_terms-1.png" /><!-- --></p>
+</div>
+<div id="using-goplot-to-visualize-the-goterm-from-david" class="section level3">
+<h3><span class="header-section-number">5.1.2</span> Using GOplot to visualize the GOterm from DAVID</h3>
+<p>First, we have to put the data in the format required by the package.</p>
+<pre class="r"><code>#for the expression data I will use the counts from the DGElist from the importated salmon data.
+cts_k&lt;-DESeq2::counts(dds_k, normalized=TRUE)
+saveRDS(cts_k,file = file.path(output_dir,sprintf(&quot;%s_vs_%s_counts_TPM_Kal_with_outliers.RDS&quot;,groups[1], groups[2])))
+eset &lt;- cts_k
+genelist&lt;- as.data.frame(resSig_Kal)
+names(genelist)[2]&lt;-&quot;logFC&quot;
+genelist$ID&lt;-as.factor(rownames(genelist))
+genelist&lt;-genelist[,c(7,2,6)]
+david_fun_k&lt;- DAVID_results_chart_DESeq_kal_BP
+Term&lt;- gsub(&quot;^.*?~&quot;,&quot;&quot;,DAVID_results_chart_DESeq_kal_BP$Term)
+ID&lt;- gsub(&quot;~.*&quot;, &quot;&quot;, DAVID_results_chart_DESeq_kal_BP$Term)
+#removing the GOID of the term. the(^) is the beginig of the string, (.) matching any characther, (*)repeated multiple times until get to ~, and plepace it by nothing &quot;&quot;.The ? makes it to match until the first ~ , if there were two ~. 
+david_fun_k$Term&lt;-as.factor(Term)
+david_fun_k$ID&lt;- as.factor(ID)
+david_fun_k$Category &lt;-as.factor(c(rep(&quot;BP&quot;, length(david_fun_k$Category) )))
+if(dim(david_fun_k)[1]&gt;0){
+colnames(david_fun_k)[13]&lt;-&quot;adj_pval&quot;
+david_fun_k &lt;- david_fun_k[,c(1,14,2,6,13)]
+head(david_fun_k)
+#Now I will choose the first 5 more significant processes
+process&lt;-as.character(david_fun_k[order(david_fun_k$adj_pval),3])[1:5]
+dataGOplot_kal&lt;-list(eset = eset,genelist = genelist,david = as.data.frame(david_fun_k),process = process)
+}else{
+  print(&quot;Functional chart empty&quot;)
+}</code></pre>
+<p>. Now, that we have the data in the right format let’s plot it using GOplot.</p>
+<div id="plot-the-pathway-colered-by-z-score-significance" class="section level4">
+<h4><span class="header-section-number">5.1.2.1</span> Plot the pathway colered by z-score significance</h4>
+<pre class="r"><code>if(dim(david_fun_k)[1]&gt;0 &amp; length(unique(circ_k$zscore)) &gt; 1){
+print(GOBar(circ_k))}else {
+  print(&quot;No significant terms&quot;)
+}</code></pre>
+<p><img src="FiguresGoBar-1.png" /><!-- --></p>
+</div>
+<div id="bubble-plot-of-pathways" class="section level4">
+<h4><span class="header-section-number">5.1.2.2</span> Bubble plot of pathways</h4>
+<pre class="r"><code>if(min(circ_k$adj_pval) &lt; 0.05){
+print(GOBubble(circ_k, labels = 1))} else {
+  print(&quot;No significant terms&quot;)
+}</code></pre>
+<p><img src="FiguresGOBubble-1.png" /><!-- -->TableGrob (1 x 2) “arrange”: 2 grobs z cells name grob 1 1 (1-1,1-1) arrange gtable[layout] 2 2 (1-1,2-2) arrange gtable[colhead-fg]</p>
+</div>
+<div id="plot-significant-enriched-pathways-and-de-genes" class="section level4">
+<h4><span class="header-section-number">5.1.2.3</span> Plot significant enriched pathways and DE Genes</h4>
+<p>This plot is interesting because it shows which genes are up and down on the pathway</p>
+<pre class="r"><code>if(dim(david_fun_k)[1]&gt; 0 &amp; length(unique(circ_k$zscore)) &gt; 1){
+nsub&lt;- ifelse(dim(circ_k[!duplicated(circ_k$term), ])[1] &gt; 10, 10, dim(circ_k[!duplicated(circ_k$term), ])[1]);
+print(GOCircle(circ_k,nsub = nsub))} else {
+  print(&quot;No significant terms&quot;)
+}</code></pre>
+<p><img src="FiguresGOCircle-1.png" /><!-- -->TableGrob (1 x 2) “arrange”: 2 grobs z cells name grob 1 1 (1-1,1-1) arrange gtable[layout] 2 2 (1-1,2-2) arrange gtable[colhead-fg]</p>
+<p>I can also plot the relationship between the DE genes and the most enriched pathways</p>
+<pre class="r"><code>if(dim(david_fun_k)[1]&gt;0){
+subData &lt;- subset(circ_k, term %in% process);
+genes&lt;-subset(genelist, ID %in% subData$genes);
+All_genes&lt;- getBM(attributes = c(&quot;ensembl_gene_id&quot;,&quot;external_gene_name&quot;), filters= &quot;ensembl_gene_id&quot;, values = row.names(res_k), mart = Pig_ensembl);
+names_subData&lt;- subset(All_genes, ensembl_gene_id %in% subData$genes);
+names_subData$external_gene_name&lt;- ifelse(names_subData$external_gene_name == &quot;&quot;, names_subData$ensembl_gene_id, names_subData$external_gene_name);
+chord_k &lt;- chord_dat(circ_k, genes = genes, process = dataGOplot_kal$process);
+chord_names&lt;-as.data.frame(cbind(chord_k, names_subData[,&quot;external_gene_name&quot;][match(rownames(chord_k), names_subData$ensembl_gene_id)]));
+row.names(chord_k)&lt;-chord_names$V7;
+chord_k&lt;-chord_k[,colSums(chord_k != 0) &gt; 0];
+print(GOChord(chord_k));
+chord&lt;-chord_k;
+terms&lt;-dataGOplot_kal$process[!is.na(dataGOplot_kal$process)]
+if(length(terms)&gt;2){
+print(GOCluster(circ_k, dataGOplot_kal$process, clust.by = &quot;term&quot;, lfc.col = c(&#39;darkgoldenrod1&#39;,&#39;black&#39;,&#39;cyan1&#39;)))}}else{
+  print(&quot;No significant term found!&quot;)
+}</code></pre>
+<pre><code>## Batch submitting query [=&gt;------------------------] 6% eta: 8s Batch
+## submitting query [=&gt;------------------------] 9% eta: 18s Batch
+## submitting query [==&gt;-----------------------] 12% eta: 15s Batch
+## submitting query [===&gt;----------------------] 16% eta: 21s Batch
+## submitting query [====&gt;---------------------] 19% eta: 21s Batch
+## submitting query [=====&gt;--------------------] 22% eta: 24s Batch
+## submitting query [=====&gt;--------------------] 25% eta: 30s Batch
+## submitting query [======&gt;-------------------] 28% eta: 35s Batch
+## submitting query [=======&gt;------------------] 31% eta: 31s Batch
+## submitting query [========&gt;-----------------] 34% eta: 32s Batch
+## submitting query [=========&gt;----------------] 38% eta: 29s Batch
+## submitting query [==========&gt;---------------] 41% eta: 32s Batch
+## submitting query [==========&gt;---------------] 44% eta: 29s Batch
+## submitting query [===========&gt;--------------] 47% eta: 26s Batch
+## submitting query [============&gt;-------------] 50% eta: 25s Batch
+## submitting query [=============&gt;------------] 53% eta: 25s Batch
+## submitting query [==============&gt;-----------] 56% eta: 25s Batch
+## submitting query [==============&gt;-----------] 59% eta: 22s Batch
+## submitting query [===============&gt;----------] 62% eta: 19s Batch
+## submitting query [================&gt;---------] 66% eta: 17s Batch
+## submitting query [=================&gt;--------] 69% eta: 15s Batch
+## submitting query [==================&gt;-------] 72% eta: 14s Batch
+## submitting query [===================&gt;------] 75% eta: 13s Batch
+## submitting query [===================&gt;------] 78% eta: 12s Batch
+## submitting query [====================&gt;-----] 81% eta: 11s Batch
+## submitting query [=====================&gt;----] 84% eta: 9s Batch
+## submitting query [======================&gt;---] 88% eta: 7s Batch
+## submitting query [=======================&gt;--] 91% eta: 5s Batch
+## submitting query [=======================&gt;--] 94% eta: 3s Batch submitting
+## query [========================&gt;-] 97% eta: 2s Batch submitting query
+## [==========================] 100% eta: 0s</code></pre>
+<pre><code>## Warning: Using size for a discrete variable is not advised.</code></pre>
+<pre><code>## Warning: Removed 5 rows containing missing values (geom_point).</code></pre>
+<div class="figure">
+<img src="FiguresGOplot_terms_and_genes-1.png" />
+
+</div>
+<pre><code>## Warning: Using size for a discrete variable is not advised.
+
+## Warning: Removed 5 rows containing missing values (geom_point).</code></pre>
+<div class="figure">
+<img src="FiguresGOplot_terms_and_genes-2.png" />
+
+</div>
+<pre class="r"><code>#the GOCluster indicated in the outer ring the pathway that the gene is associated to, the inner ring shows the log2fc of the gene and the clustering the gene by category, euclidean average </code></pre>
+</div>
+</div>
+<div id="reactome-pathways" class="section level3">
+<h3><span class="header-section-number">5.1.3</span> Reactome pathways</h3>
+<p>Using Biomart to convert the genes names into entrez ID (human) so I can use ReactomePA to do the pathway analysis</p>
+<p>First table converting all the genes to entrex id and then filtering by padj &lt; 0.1</p>
+<pre class="r"><code>allentrez&lt;- getBM(attributes = c(&quot;external_gene_name&quot;, &quot;entrezgene&quot;), filters= &quot;external_gene_name&quot;, values = All_genes$external_gene_name, mart = Human) </code></pre>
+<pre><code>## Batch submitting query [=&gt;------------------------] 6% eta: 1m Batch
+## submitting query [=&gt;------------------------] 9% eta: 1m Batch submitting
+## query [==&gt;-----------------------] 12% eta: 2m Batch submitting
+## query [===&gt;----------------------] 16% eta: 2m Batch submitting
+## query [====&gt;---------------------] 19% eta: 2m Batch submitting
+## query [=====&gt;--------------------] 22% eta: 2m Batch submitting
+## query [=====&gt;--------------------] 25% eta: 2m Batch submitting
+## query [======&gt;-------------------] 28% eta: 2m Batch submitting
+## query [=======&gt;------------------] 31% eta: 2m Batch submitting
+## query [========&gt;-----------------] 34% eta: 2m Batch submitting
+## query [=========&gt;----------------] 38% eta: 2m Batch submitting
+## query [==========&gt;---------------] 41% eta: 2m Batch submitting
+## query [==========&gt;---------------] 44% eta: 1m Batch submitting
+## query [===========&gt;--------------] 47% eta: 1m Batch submitting
+## query [============&gt;-------------] 50% eta: 1m Batch submitting
+## query [=============&gt;------------] 53% eta: 1m Batch submitting
+## query [==============&gt;-----------] 56% eta: 1m Batch submitting
+## query [==============&gt;-----------] 59% eta: 1m Batch submitting
+## query [===============&gt;----------] 62% eta: 1m Batch submitting
+## query [================&gt;---------] 66% eta: 1m Batch submitting
+## query [=================&gt;--------] 69% eta: 46s Batch submitting
+## query [==================&gt;-------] 72% eta: 42s Batch submitting
+## query [===================&gt;------] 75% eta: 37s Batch submitting
+## query [===================&gt;------] 78% eta: 32s Batch submitting
+## query [====================&gt;-----] 81% eta: 27s Batch submitting
+## query [=====================&gt;----] 84% eta: 23s Batch submitting
+## query [======================&gt;---] 88% eta: 18s Batch submitting
+## query [=======================&gt;--] 91% eta: 14s Batch submitting
+## query [=======================&gt;--] 94% eta: 9s Batch submitting
+## query [========================&gt;-] 97% eta: 4s Batch submitting query
+## [==========================] 100% eta: 0s</code></pre>
+<pre class="r"><code>l2fc&lt;- as.data.frame(res_k[,c(2,6)])
+All_genes_entrez_rank&lt;-merge(l2fc, All_genes, by.x = &quot;row.names&quot;,by.y = &quot;ensembl_gene_id&quot;)
+All_genes_entrez_rank&lt;- merge(All_genes_entrez_rank, allentrez, by= &quot;external_gene_name&quot;)
+all_genes_list&lt;-All_genes_entrez_rank$log2FoldChange
+names(all_genes_list)&lt;-All_genes_entrez_rank$entrezgene
+all_genes_list&lt;-sort(all_genes_list, decreasing = T)
+DE_genes_entrez_rank&lt;- All_genes_entrez_rank[All_genes_entrez_rank$padj &lt; 0.1 &amp; !is.na(All_genes_entrez_rank$padj),]
+DE_genes_list_k&lt;- DE_genes_entrez_rank$log2FoldChange
+names(DE_genes_list_k)&lt;- DE_genes_entrez_rank$entrezgene
+DE_genes_list_k&lt;- sort(DE_genes_list_k, decreasing = T)</code></pre>
+<div id="using-reactome-to-analize-subsetted-from-all-genes" class="section level4">
+<h4><span class="header-section-number">5.1.3.1</span> Using reactome to analize subsetted from all genes</h4>
+<p>Plots:</p>
+<pre class="r"><code>if(!is.null(x)){
+if(min(x@result$p.adjust)&lt;0.05){
+sprintf(&quot;Barplot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(barplot(x, showCategory = 30));
+sprintf(&quot;Dotplot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(dotplot(x, showCategory=15));
+sprintf(&quot;Enrichment map plot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(emapplot(x, showCategory = 15, color = &quot;p.adjust&quot;,layout = &quot;kk&quot;,colorEdge = TRUE)); 
+print(cnetplot(x,showCategory = 5, categorySize = &quot;pvalue&quot;, foldChange = DE_genes_entrez_rank$log2FoldChange, node_label= F, colorEdge = T))} else {
+  print(&quot;no enriched term found&quot;)
+}}</code></pre>
+<pre><code>## wrong orderBy parameter; set to default `orderBy = &quot;x&quot;`</code></pre>
+<p><img src="FiguresReactome_plots-1.png" /><img src="FiguresReactome_plots-2.png" /><img src="FiguresReactome_plots-3.png" /><img src="FiguresReactome_plots-4.png" /></p>
+<p>Ploting the GSEA ( gene set enrichment analysis): where the green line is the enrichment score, and the peak of the line is the emrichment score of the gene set. the gene following the peak are the one that more influenced the score. the lines are where the genes are in the ranked list and the bigger the line greater the correlation between the gene and the phenotype. The gene above zero are related to the first phenotype and the ones bellow zeros to the other phenotype.</p>
+<pre class="r"><code>if(nrow(y) &gt; 0){
+print(gseaplot(y, geneSetID =(as.data.frame(y))[1,1],title = as.character((as.data.frame(y))[1,2])));
+print(cnetplot(y, categorySize = &quot;pvalue&quot;, foldChange = DE_genes_entrez_rank$log2FoldChange,colorEdge = TRUE,node_label= FALSE));
+print(emapplot(y, showCategory = 15, color = &quot;p.adjust&quot;,layout = &quot;kk&quot;));
+}
+#DEunique&lt;- DE_genes_list[!duplicated(names(DE_genes_list))]</code></pre>
+<div id="reactome-of-the-upregulated-genes" class="section level5">
+<h5><span class="header-section-number">5.1.3.1.1</span> Reactome of the upregulated genes</h5>
+<pre class="r"><code>if(!is.null(x)){
+if(min(x@result$p.adjust)&lt;0.05){
+sprintf(&quot;Barplot for the most enriched reactome pathway for Kallisto/DESeq upregulated genes analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(barplot(x, showCategory = 30));
+sprintf(&quot;Dotplot for the most enriched reactome pathway for Kallisto/DESeq  upregulated genes analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(dotplot(x, showCategory=15));
+sprintf(&quot;Enrichment map plot for the most enriched reactome pathway for Kallisto/DESeq upregulated genes analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(emapplot(x, showCategory = 15, color = &quot;p.adjust&quot;,layout = &quot;kk&quot;,colorEdge = T) );
+print(cnetplot(x,showCategory = 5, categorySize = &quot;pvalue&quot;, foldChange = up_genes_list_k, node_label= F, colorEdge = T))}
+}</code></pre>
+<p>GSEA for the upregulated genes:</p>
+<pre class="r"><code>if(nrow(y) &gt; 0){
+print(gseaplot(y, geneSetID =(as.data.frame(y))[1,1],title = as.character((as.data.frame(y))[1,2])));
+print(cnetplot(y, categorySize = &quot;pvalue&quot;, foldChange = upentrez$log2FoldChange,colorEdge = T));
+print(emapplot(y, showCategory = 15, color = &quot;p.adjust&quot;,layout = &quot;kk&quot;));
+}</code></pre>
+</div>
+</div>
+<div id="reactome-of-downregulated-genes" class="section level4">
+<h4><span class="header-section-number">5.1.3.2</span> Reactome of downregulated genes</h4>
+<pre class="r"><code>if(!is.null(x)){
+if(min(x@result$p.adjust)&lt;0.05){
+sprintf(&quot;Barplot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(barplot(x, showCategory = 30));
+sprintf(&quot;Dotplot for the most enriched reactome pathway for Kallisto/DESeq analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(dotplot(x, showCategory=15));
+sprintf(&quot;Enrichment map plot for the most enriched reactome pathway for Kallisto/DESeq downregulated genes analysis for comparison %s vs %s&quot;, groups[1],groups[2]);
+print(emapplot(x, showCategory = 15, color = &quot;p.adjust&quot;,layout = &quot;kk&quot;));
+print(cnetplot(x,showCategory = 5, categorySize = &quot;pvalue&quot;, foldChange = down_genes_list_k, node_label= F, colorEdge = T))}} else {
+  print(&quot;NO enriched term found&quot;)
+}</code></pre>
+<pre><code>## wrong orderBy parameter; set to default `orderBy = &quot;x&quot;`</code></pre>
+<p><img src="Figuresreactome_down_plots-1.png" /><img src="Figuresreactome_down_plots-2.png" /><img src="Figuresreactome_down_plots-3.png" /><img src="Figuresreactome_down_plots-4.png" /></p>
+<p>GSEA of downregulated genes</p>
+<pre class="r"><code>if(nrow(y) &gt; 0){
+print(gseaplot(y, geneSetID =(as.data.frame(y))[1,1],title = as.character((as.data.frame(y))[1,2])));
+print(cnetplot(y, categorySize = &quot;pvalue&quot;, foldChange = downentrez$log2FoldChange,colorEdge = T));
+print(emapplot(y, showCategory = 15, color = &quot;p.adjust&quot;,layout = &quot;kk&quot;));
+}
+#downunique&lt;- down_genes_list[!duplicated(names(down_genes_list))]
+#viewPathway(as.character((as.data.frame(y))[1,2]), readable = T, foldChange = downunique )</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div id="edger" class="section level1">
+<h1><span class="header-section-number">6</span> EdgeR</h1>
+<p>We can repeat the same analysis using edgeR as the inference engine (Robinson, McCarthy, and Smyth 2009). The following code incorporates the average transcript length matrix as an offset for an edgeR analysis.</p>
+<p>But I will use the tximport imported counts again and calculate the nomalization.</p>
+<pre class="r"><code>library(edgeR)
+#I will use the data from Salmon imported with tximport
+counts_kal&lt;-txikallisto$counts
+normMat &lt;- txikallisto$length
+normMat &lt;- normMat / exp(rowMeans(log(normMat)))
+o &lt;- log(calcNormFactors(counts_kal/normMat)) + log(colSums(counts_kal/normMat))
+EdgeR_k &lt;- DGEList(counts_kal)
+EdgeR_k &lt;- scaleOffset(EdgeR_k, t(t(log(normMat)) + o))
+keep &lt;- filterByExpr(EdgeR_k)
+EdgeR_k &lt;- EdgeR_k[keep,]
+#The basic edgeR model fitting and results extraction can be accomplished with the following lines:
+EdgeR_k$samples$group&lt;-substr(colnames(txikallisto$counts),1,nchar(colnames(txikallisto$counts))-1)
+EdgeR_k&lt;- calcNormFactors(EdgeR_k)
+EdgeR_k&lt;-estimateDisp(EdgeR_k)</code></pre>
+<p>Design matrix not provided. Switch to the classic mode. ## The results from the EdgeR</p>
+<div id="counts-of-the-edgerdataset" class="section level3">
+<h3><span class="header-section-number">6.0.1</span> Counts of the EdgeRdataset</h3>
+<pre class="r"><code>head(as.data.frame(EdgeR_k$counts))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Goat_milk1"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["Goat_milk2"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Goat_milk3"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Goat_milk4"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["No_milk1"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["No_milk2"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["No_milk3"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["No_milk4"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"414.0061","2":"698.0445","3":"1518.012","4":"405.000","5":"434.002","6":"383.0032","7":"473.0050","8":"285.000","_rn_":"ENSSSCG00000000002"},{"1":"3345.1919","2":"3141.2844","3":"2693.875","4":"6606.466","5":"6514.742","6":"7902.7155","7":"6129.2895","8":"2990.395","_rn_":"ENSSSCG00000000003"},{"1":"285.0000","2":"173.0000","3":"305.000","4":"152.000","5":"196.000","6":"203.0000","7":"166.0000","8":"144.000","_rn_":"ENSSSCG00000000005"},{"1":"93.0000","2":"323.0000","3":"57.000","4":"632.000","5":"1275.000","6":"531.0000","7":"870.0000","8":"188.000","_rn_":"ENSSSCG00000000006"},{"1":"410.0000","2":"320.0000","3":"547.000","4":"372.000","5":"407.000","6":"432.0000","7":"422.0000","8":"349.000","_rn_":"ENSSSCG00000000007"},{"1":"1200.1717","2":"1656.0425","3":"1734.321","4":"2415.592","5":"2705.921","6":"2456.4841","7":"925.3221","8":"1095.538","_rn_":"ENSSSCG00000000010"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="plot-mds-of-the-data" class="section level3">
+<h3><span class="header-section-number">6.0.2</span> Plot MDS of the data</h3>
+<p>The difference between the PCA nad MDS is that PCR display the two dimentions with the largest variance in the data, MDS is based in the pairwise distances betwen the points of the data. They will be the same if the covariance in the data is equal to the euclidean distance between data points.</p>
+<pre class="r"><code>plotMDS(EdgeR_k)</code></pre>
+<p><img src="FiguresMDS_plot-1.png" /><!-- --></p>
+</div>
+<div id="de-analysis-using-exact-test" class="section level3">
+<h3><span class="header-section-number">6.0.3</span> DE analysis using exact test</h3>
+<p>I will use the exact test to do the pairwise comparison without any batch effect.</p>
+<p>And the number of genes with pvalue &lt; 0.1</p>
+<pre class="r"><code>EdgeR_k$samples$W1&lt;-set_k_n$W_1
+design&lt;-model.matrix(as.formula(~ W1+ group),data =EdgeR_k$samples)
+DE_fit&lt;-glmQLFit(EdgeR_k,design=design)
+DE_single_factor_edgeR&lt;- glmQLFTest(DE_fit)
+sig_DE_EdgeR_k&lt;-DE_single_factor_edgeR$table[DE_single_factor_edgeR$table$PValue &lt; 0.1,]
+dim(sig_DE_EdgeR_k)</code></pre>
+<p>[1] 4266 4</p>
+</div>
+<div id="toptags" class="section level2">
+<h2><span class="header-section-number">6.1</span> Toptags</h2>
+<p>Number of Genes with log2FoldChange &lt; -1 or &gt; 1, and p.adjusted &lt; 0.1 and the table with the values.</p>
+<pre class="r"><code>Topgenes_sfactor_edgeR_k&lt;-topTags(DE_single_factor_edgeR, n = nrow(sig_DE_EdgeR_k))
+#The FDR is adj. Pvalue  
+Topgenes_sfactor_edgeR_k_0.1_1&lt;- 
+Topgenes_sfactor_edgeR_k[Topgenes_sfactor_edgeR_k$table$FDR &lt; 0.1   &amp; Topgenes_sfactor_edgeR_k$table$logFC &lt; -1 | Topgenes_sfactor_edgeR_k$table$logFC &gt; 1,]
+dim(Topgenes_sfactor_edgeR_k_0.1_1)</code></pre>
+<p>[1] 360 5</p>
+<pre class="r"><code>head(Topgenes_sfactor_edgeR_k_0.1_1$table)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["logFC"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["logCPM"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["PValue"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["FDR"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"5.818664","2":"5.4495595","3":"197.59834","4":"9.381491e-08","5":"0.001333297","_rn_":"ENSSSCG00000037358"},{"1":"1.674915","2":"6.3013470","3":"64.80399","4":"1.371211e-05","5":"0.088484334","_rn_":"ENSSSCG00000017601"},{"1":"2.281140","2":"5.2797251","3":"58.55586","4":"2.106076e-05","5":"0.088484334","_rn_":"ENSSSCG00000003882"},{"1":"2.523835","2":"0.8830991","3":"56.26228","4":"2.490412e-05","5":"0.088484334","_rn_":"ENSSSCG00000026043"},{"1":"2.917921","2":"4.1537023","3":"42.67908","4":"7.736533e-05","5":"0.152379735","_rn_":"ENSSSCG00000008953"},{"1":"1.356883","2":"5.7195683","3":"41.59385","4":"8.577525e-05","5":"0.152379735","_rn_":"ENSSSCG00000001063"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>saveRDS(Topgenes_sfactor_edgeR_k_0.1_1$table, file = file.path(output_dir,sprintf(&quot;%s_vs_%s_EdgeR_sig_Kal_with_outliers.RDS&quot;,groups[1], groups[2])))</code></pre>
+<div id="toptags-downregulated-genes" class="section level3">
+<h3><span class="header-section-number">6.1.1</span> Toptags downregulated genes</h3>
+<pre class="r"><code>#Get the down regulated genes in the second group
+Topgenes_sfactor_edgeR_k_0.1_1_down&lt;- Topgenes_sfactor_edgeR_k_0.1_1[Topgenes_sfactor_edgeR_k_0.1_1$table$logFC &lt; 0, ]
+Topgenes_sfactor_edgeR_k_0.1_1_down&lt;- Topgenes_sfactor_edgeR_k_0.1_1_down[order(Topgenes_sfactor_edgeR_k_0.1_1_down$table$logFC), ]
+dim(Topgenes_sfactor_edgeR_k_0.1_1_down)</code></pre>
+<p>[1] 0 5</p>
+<pre class="r"><code>head(Topgenes_sfactor_edgeR_k_0.1_1_down$table)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["logFC"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["logCPM"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["PValue"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["FDR"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="toptags-upregulated-genes" class="section level3">
+<h3><span class="header-section-number">6.1.2</span> Toptags upregulated genes</h3>
+<pre class="r"><code>#Getting the upregulated genes in the second group
+Topgenes_sfactor_edgeR_k_0.1_1_up&lt;- Topgenes_sfactor_edgeR_k_0.1_1[Topgenes_sfactor_edgeR_k_0.1_1$table$logFC &gt; 0, ]
+Topgenes_sfactor_edgeR_k_0.1_1_up&lt;-Topgenes_sfactor_edgeR_k_0.1_1_up[order(-Topgenes_sfactor_edgeR_k_0.1_1_up$table$logFC), ]
+dim(Topgenes_sfactor_edgeR_k_0.1_1_up)</code></pre>
+<p>[1] 360 5</p>
+<pre class="r"><code>head(Topgenes_sfactor_edgeR_k_0.1_1_up$table)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["logFC"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["logCPM"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["F"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["PValue"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["FDR"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"5.818664","2":"5.449560","3":"197.598341","4":"9.381491e-08","5":"0.001333297","_rn_":"ENSSSCG00000037358"},{"1":"3.787192","2":"9.470112","3":"5.458172","4":"4.243321e-02","5":"0.249404788","_rn_":"ENSSSCG00000033675"},{"1":"3.270671","2":"5.566511","3":"29.503679","4":"3.243023e-04","5":"0.194221763","_rn_":"ENSSSCG00000026594"},{"1":"3.004612","2":"5.738414","3":"36.422856","4":"1.449358e-04","5":"0.194221763","_rn_":"ENSSSCG00000016609"},{"1":"2.917921","2":"4.153702","3":"42.679080","4":"7.736533e-05","5":"0.152379735","_rn_":"ENSSSCG00000008953"},{"1":"2.673322","2":"9.391364","3":"5.768428","4":"3.800019e-02","5":"0.243201220","_rn_":"ENSSSCG00000011862"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</div>
+<div id="creating-a-volcano-plot-and-a-heatmap" class="section level1">
+<h1><span class="header-section-number">7</span> Creating a volcano plot and a heatmap</h1>
+<pre class="r"><code>plot(DE_single_factor_edgeR$table$logFC,-log(DE_single_factor_edgeR$table$PValue),main =&quot;Volcano plot Kallisto data from EdgeR&quot;, xlab= &quot;Log2FoldChange&quot;, ylab = &quot;-log(Pvalue)&quot;, pch = 21, col=ifelse(DE_single_factor_edgeR$table$PValue&lt;0.001,&quot;red&quot;,&quot;black&quot;), xlim= c(-5,5), ylim =c(0,25), abline(v=c(-2,2)))</code></pre>
+<p><img src="Figuresplot_DE_EdgeR_Kallisto-1.png" /><!-- --></p>
+<pre class="r"><code>#Using normalized counts
+counts_kal_n &lt;- cpm(EdgeR_k, normalized.lib.sizes = T)
+Sig_counts&lt;-counts_kal_n[row.names(counts_kal_n) %in% row.names(Topgenes_sfactor_edgeR_k_0.1_1$table),]
+var_genes &lt;- apply(Sig_counts, 1, var)
+head(var_genes)</code></pre>
+<p>ENSSSCG00000000006 ENSSSCG00000000591 ENSSSCG00000000634 97.412787 8.170334 408.481050 ENSSSCG00000000640 ENSSSCG00000000647 ENSSSCG00000000778 1.535957 4.041758 49.175127</p>
+<pre class="r"><code>Sig_counts&lt;- cbind(Sig_counts, var_genes)
+Sig_counts&lt;-Sig_counts[order(Sig_counts[,7],decreasing =T),]
+len&lt;-ifelse(dim(Sig_counts)[1]&lt;50, dim(Sig_counts)[1],50)
+heatmap.2(Sig_counts[1:len,1:(ncol(Sig_counts)-1)],  trace=&quot;none&quot;, 
+              main=&quot;Most variable genes across samples Kallisto from EdgeR&quot;, scale=&quot;row&quot;,col = rev(morecols(50)),
+              labCol = labels )</code></pre>
+<p><img src="Figuresedger_heatmap-1.png" /><!-- --></p>
+<div id="functional-analysis-of-the-edger-results" class="section level2">
+<h2><span class="header-section-number">7.1</span> Functional analysis of the EdgeR results</h2>
+<p>Using the DAVIDWEBServices to analize the DE genes and doing the plot2D of terms and evidence:</p>
+<pre class="r"><code>if(is.connected(david)== FALSE) {
+  connect(david)
+}
+DAVID_results_EdgeR_k&lt;- addList(david, row.names(Topgenes_sfactor_edgeR_k_0.1_1$table), idType = &quot;ENSEMBL_GENE_ID&quot; , listName = sprintf(&quot;%s_v_%s_Sig_genes_EdgeR&quot;,groups[1],groups[2]) ,listType = &quot;Gene&quot; )
+# to see the p% of genes that were recognize on DAVID database
+DAVID_results_EdgeR_k$inDavid</code></pre>
+<p>[1] 0.625</p>
+<pre class="r"><code>DAVID_results_chart&lt;- getFunctionalAnnotationChart(david)
+DAVID_results_chart_EdgeR_k_BP&lt;-DAVID_results_chart[DAVID_results_chart$Category == &quot;GOTERM_BP_DIRECT&quot; &amp; DAVID_results_chart$PValue &lt; 0.05,]
+if(dim(DAVID_results_chart_EdgeR_k_BP)[1]&gt;0){
+plot2D(DAVIDFunctionalAnnotationChart(DAVID_results_chart_EdgeR_k_BP[1:5,]),
+       color=c(&quot;FALSE&quot;=&quot;black&quot;, &quot;TRUE&quot;=&quot;green&quot;))
+}else{
+  print(&quot;No significant term found&quot;)
+}</code></pre>
+<p><img src="FiguresEdgeR_DAVID-1.png" /><!-- --></p>
+<div id="comparing-the-results-from-deseq-and-edger" class="section level3">
+<h3><span class="header-section-number">7.1.1</span> Comparing the results from DESeq and EdgeR</h3>
+<pre class="r"><code>if(dim(DAVID_results_chart_DESeq_kal_BP) &amp; dim(DAVID_results_chart_EdgeR_k_BP)[1]&gt;0){
+sprintf(&quot;DESeq2_%s_%s&quot;, groups[1],groups[2])
+head(DAVID_results_chart_DESeq_kal_BP[order(DAVID_results_chart_DESeq_kal_BP$PValue),],10)
+sprintf(&quot;EdgeR_%s_%s&quot;, groups[1],groups[2])
+head(DAVID_results_chart_EdgeR_k_BP[order(DAVID_results_chart_EdgeR_k_BP$PValue),],10)
+# We can see the top 5 GO pathways for biological process, and note how the evidence is true in our data for each of the genes in the pathway( if it is present on our sample or not)
+#We can also use the chart to do a godag plot 
+}else{
+  print(&quot;Either DESeq or EdgeR functional chart is empty&quot;)
+}</code></pre>
+<pre><code>## Warning in if (dim(DAVID_results_chart_DESeq_kal_BP) &amp;
+## dim(DAVID_results_chart_EdgeR_k_BP)[1] &gt; : the condition has length &gt; 1 and
+## only the first element will be used</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Category"],"name":[1],"type":["fctr"],"align":["left"]},{"label":["Term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["Count"],"name":[3],"type":["int"],"align":["right"]},{"label":["X."],"name":[4],"type":["dbl"],"align":["right"]},{"label":["PValue"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Genes"],"name":[6],"type":["chr"],"align":["left"]},{"label":["List.Total"],"name":[7],"type":["int"],"align":["right"]},{"label":["Pop.Hits"],"name":[8],"type":["int"],"align":["right"]},{"label":["Pop.Total"],"name":[9],"type":["int"],"align":["right"]},{"label":["Fold.Enrichment"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["Bonferroni"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["Benjamini"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["FDR"],"name":[13],"type":["dbl"],"align":["right"]}],"data":[{"1":"GOTERM_BP_DIRECT","2":"GO:0006631~fatty acid metabolic process","3":"4","4":"1.777778","5":"0.0009212898","6":"ENSSSCG00000010274, ENSSSCG00000002718, ENSSSCG00000000006, ENSSSCG00000010631","7":"163","8":"14","9":"11368","10":"19.926380","11":"0.5154175","12":"0.5154175","13":"1.401637","_rn_":"7"},{"1":"GOTERM_BP_DIRECT","2":"GO:0051607~defense response to virus","3":"8","4":"3.555556","5":"0.0013327348","6":"ENSSSCG00000014091, ENSSSCG00000012077, ENSSSCG00000009881, ENSSSCG00000008648, ENSSSCG00000015801, ENSSSCG00000010631, ENSSSCG00000010271, ENSSSCG00000010452","7":"163","8":"116","9":"11368","10":"4.809816","11":"0.6494417","12":"0.4079204","13":"2.021654","_rn_":"9"},{"1":"GOTERM_BP_DIRECT","2":"GO:0035725~sodium ion transmembrane transport","3":"3","4":"1.333333","5":"0.0040439103","6":"ENSSSCG00000000804, ENSSSCG00000008943, ENSSSCG00000016609","7":"163","8":"7","9":"11368","10":"29.889571","11":"0.9586200","12":"0.6541163","13":"6.016950","_rn_":"12"},{"1":"GOTERM_BP_DIRECT","2":"GO:0042752~regulation of circadian rhythm","3":"4","4":"1.777778","5":"0.0071654202","6":"ENSSSCG00000027017, ENSSSCG00000024596, ENSSSCG00000000006, ENSSSCG00000008629","7":"163","8":"28","9":"11368","10":"9.963190","11":"0.9964905","12":"0.7566060","13":"10.428174","_rn_":"17"},{"1":"GOTERM_BP_DIRECT","2":"GO:0008285~negative regulation of cell proliferation","3":"8","4":"3.555556","5":"0.0096168894","6":"ENSSSCG00000016716, ENSSSCG00000014927, ENSSSCG00000024970, ENSSSCG00000016140, ENSSSCG00000005437, ENSSSCG00000015353, ENSSSCG00000014207, ENSSSCG00000010452","7":"163","8":"166","9":"11368","10":"3.361076","11":"0.9994973","12":"0.7810893","13":"13.756019","_rn_":"20"},{"1":"GOTERM_BP_DIRECT","2":"GO:0032922~circadian regulation of gene expression","3":"4","4":"1.777778","5":"0.0133149143","6":"ENSSSCG00000013335, ENSSSCG00000024596, ENSSSCG00000000006, ENSSSCG00000021038","7":"163","8":"35","9":"11368","10":"7.970552","11":"0.9999734","12":"0.8272604","13":"18.558076","_rn_":"23"},{"1":"GOTERM_BP_DIRECT","2":"GO:0032757~positive regulation of interleukin-8 production","3":"3","4":"1.333333","5":"0.0142008940","6":"ENSSSCG00000010885, ENSSSCG00000030408, ENSSSCG00000015801","7":"163","8":"13","9":"11368","10":"16.094384","11":"0.9999869","12":"0.7993088","13":"19.670846","_rn_":"27"},{"1":"GOTERM_BP_DIRECT","2":"GO:0007169~transmembrane receptor protein tyrosine kinase signaling pathway","3":"4","4":"1.777778","5":"0.0324600091","6":"ENSSSCG00000026978, ENSSSCG00000029165, ENSSSCG00000005215, ENSSSCG00000000634","7":"163","8":"49","9":"11368","10":"5.693252","11":"1.0000000","12":"0.9609184","13":"39.670774","_rn_":"41"},{"1":"GOTERM_BP_DIRECT","2":"GO:0045087~innate immune response","3":"7","4":"3.111111","5":"0.0330479569","6":"ENSSSCG00000010885, ENSSSCG00000030408, ENSSSCG00000008648, ENSSSCG00000005215, ENSSSCG00000015801, ENSSSCG00000004181, ENSSSCG00000000634","7":"163","8":"168","9":"11368","10":"2.905930","11":"1.0000000","12":"0.9468670","13":"40.229772","_rn_":"42"},{"1":"GOTERM_BP_DIRECT","2":"GO:0006898~receptor-mediated endocytosis","3":"3","4":"1.333333","5":"0.0354995463","6":"ENSSSCG00000003807, ENSSSCG00000012019, ENSSSCG00000011038","7":"163","8":"21","9":"11368","10":"9.963190","11":"1.0000000","12":"0.9416324","13":"42.508881","_rn_":"48"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="significant-terms" class="section level2">
+<h2><span class="header-section-number">7.2</span> Significant terms</h2>
+<pre class="r"><code>DAVIDGODag_EdgeR_k&lt;-DAVIDGODag(DAVIDFunctionalAnnotationChart(DAVID_results_chart_EdgeR_k_BP), type =&quot;BP&quot;,pvalueCutoff=.001)
+#we used a cutoff of 0.001 f or the pvalue. And now we can inspect the Dag object
+sigCategories(DAVIDGODag_EdgeR_k, p=0.0001)</code></pre>
+<p>character(0)</p>
+<pre class="r"><code>summary(DAVIDGODag_EdgeR_k)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["GOBPID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Pvalue"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Count"],"name":[3],"type":["int"],"align":["right"]},{"label":["Size"],"name":[4],"type":["int"],"align":["right"]},{"label":["Term"],"name":[5],"type":["chr"],"align":["left"]},{"label":["Percent"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["List.Total"],"name":[7],"type":["int"],"align":["right"]},{"label":["Pop.Total"],"name":[8],"type":["int"],"align":["right"]},{"label":["Fold.Enrichment"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["Bonferroni"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["Benjamini"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["FDR"],"name":[12],"type":["dbl"],"align":["right"]}],"data":[{"1":"GO:0006631","2":"0.0009212898","3":"4","4":"14","5":"fatty acid metabolic process","6":"1.777778","7":"163","8":"11368","9":"19.92638","10":"0.5154175","11":"0.5154175","12":"1.401637"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>show(DAVIDGODag_EdgeR_k)</code></pre>
+<p>Gene to GO BP test for over-representation 14 GO BP ids tested (1 have p &lt; 0.001) Selected gene set size: 4 Gene universe size: NA Annotation package: DAVID.website</p>
+<pre class="r"><code># we can see by the FDR column which pathways are significant</code></pre>
+<p>The graph plot of the EdgeR data</p>
+<pre class="r"><code>plotGOTermGraph(g=goDag(DAVIDGODag_EdgeR_k), r= DAVIDGODag_EdgeR_k, max.nchar= 20, node.shape=&quot;ellipse&quot;,node.colors=c(sig=&quot;red&quot;, not=&quot;white&quot;))</code></pre>
+<p><img src="Figuresplot_graph-1.png" /><!-- --></p>
+</div>
+</div>
+<div id="comparison-between-the-deseq2-and-edger-results" class="section level1">
+<h1><span class="header-section-number">8</span> Comparison between the DESeq2 and EdgeR results</h1>
+<div id="venndiagram-of-total-genes" class="section level2">
+<h2><span class="header-section-number">8.1</span> Venndiagram of total genes:</h2>
+<pre class="r"><code>library(VennDiagram)
+# Total DE genes 
+I_total&lt;- intersect(rownames(resSig_Kal), rownames(Topgenes_sfactor_edgeR_k_0.1_1$table))
+length(I_total)</code></pre>
+<p>[1] 278</p>
+<pre class="r"><code>grid.newpage()
+draw.pairwise.venn(nrow(resSig_Kal), nrow(Topgenes_sfactor_edgeR_k_0.1_1$table), length(I_total), category = c(&quot;DESeq2&quot;, &quot;EdgeR&quot;), lty = rep(&quot;blank&quot;, 
+    2), fill = c(&quot;light blue&quot;, &quot;pink&quot;), alpha = rep(0.5, 2), cat.pos = c(-15, 
+    0), cat.dist = rep(0.025, 2), title= &quot;DE genes from DESeq and EdgeR&quot;)</code></pre>
+<p><img src="Figuresintersect_DESeq_EdgeR-1.png" /><!-- -->(polygon[GRID.polygon.31590], polygon[GRID.polygon.31591], polygon[GRID.polygon.31592], polygon[GRID.polygon.31593], text[GRID.text.31594], text[GRID.text.31595], text[GRID.text.31596], text[GRID.text.31597], text[GRID.text.31598])</p>
+</div>
+<div id="comparison-between-the-downregulated-genes" class="section level2">
+<h2><span class="header-section-number">8.2</span> Comparison between the downregulated genes</h2>
+<pre class="r"><code>I_down&lt;- intersect(rownames(downresSig_Kal), rownames(Topgenes_sfactor_edgeR_k_0.1_1_down$table))
+length(I_down)</code></pre>
+<p>[1] 0</p>
+<pre class="r"><code>grid.newpage()
+draw.pairwise.venn(nrow(downresSig_Kal), nrow(Topgenes_sfactor_edgeR_k_0.1_1_down$table), length(I_down), category = c(&quot;DESeq2&quot;, &quot;EdgeR&quot;), lty = rep(&quot;blank&quot;, 
+    2), fill = c(&quot;light blue&quot;, &quot;pink&quot;), alpha = rep(0.5, 2), cat.pos = c(-15, 
+    0), cat.dist = rep(0.025, 2), title= &quot;Down regulated genes according to DESeq and/or EdgeR&quot;)</code></pre>
+<p><img src="Figuresvenn_down-1.png" /><!-- -->(polygon[GRID.polygon.31599], polygon[GRID.polygon.31600], polygon[GRID.polygon.31601], polygon[GRID.polygon.31602], text[GRID.text.31603], text[GRID.text.31604], text[GRID.text.31605], text[GRID.text.31606])</p>
+</div>
+<div id="comparison-between-the-upregulated-genes" class="section level2">
+<h2><span class="header-section-number">8.3</span> Comparison between the upregulated genes</h2>
+<pre class="r"><code>I_up&lt;- intersect(rownames(upresSig_Kal), rownames(Topgenes_sfactor_edgeR_k_0.1_1_up$table))
+length(I_up)</code></pre>
+<p>[1] 278</p>
+<pre class="r"><code>grid.newpage()
+draw.pairwise.venn(nrow(upresSig_Kal), nrow(Topgenes_sfactor_edgeR_k_0.1_1_up$table), length(I_up), category = c(&quot;DESeq2&quot;, &quot;EdgeR&quot;), lty = rep(&quot;blank&quot;, 
+    2), fill = c(&quot;light blue&quot;, &quot;pink&quot;), alpha = rep(0.5, 2), cat.pos = c(-15, 
+    0), cat.dist = rep(0.025, 2), title= &quot;up DE genes from DESeq and EdgeR&quot;)</code></pre>
+<p><img src="Figuresvenn_up-1.png" /><!-- -->(polygon[GRID.polygon.31607], polygon[GRID.polygon.31608], polygon[GRID.polygon.31609], polygon[GRID.polygon.31610], text[GRID.text.31611], text[GRID.text.31612], lines[GRID.lines.31613], text[GRID.text.31614], text[GRID.text.31615], text[GRID.text.31616])</p>
+</div>
+<div id="get-the-list-of-the-genes-that-are-in-both-deseq2-and-edger-de-genes." class="section level2">
+<h2><span class="header-section-number">8.4</span> Get the list of the genes that are in both DESeq2 and edgeR DE genes.</h2>
+<pre class="r"><code>head(I_total)</code></pre>
+<p>[1] “ENSSSCG00000037358” “ENSSSCG00000003882” “ENSSSCG00000017601” [4] “ENSSSCG00000008953” “ENSSSCG00000016609” “ENSSSCG00000026043”</p>
+<pre class="r"><code>Kallisto_intersect&lt;-gene_names_removed_outliers_kal[rownames(gene_names_removed_outliers_kal) %in% I_total, ]
+saveRDS(Kallisto_intersect,file = file.path(output_dir,sprintf(&quot;%s_vs_%s_Kallisto_intersect_with_outliers.RDS&quot;,groups[1], groups[2])))</code></pre>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
