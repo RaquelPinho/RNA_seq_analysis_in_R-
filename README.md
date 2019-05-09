@@ -23,7 +23,7 @@ The code used to trim, do the quality analysis, mapping and count for the this r
 
 [Full Fed Group vs vs Goat milk Group](http://htmlpreview.github.io/? htmlfolder)
 
-[Full Fed Group vs All hLZ milk Group](http://htmlpreview.github.io/?htmlfolder)
+[Full Fed Group vs hLZ milk Group](http://htmlpreview.github.io/ ?htmlfolder)
 
 [Goat milk Group vs hLZ milk Group](http://htmlpreview.github.io/? htmlfolder)
 
